@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leo Assistant</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="box">
+    <h1>Leo Assistant</h1>
+
+    <div class="card">
+      <h2>AI Chat</h2>
+      <textarea id="question" placeholder="Leo, meri screen par kya hai?"></textarea>
+      <button onclick="askLeo()">Ask Leo</button>
+
+      <h3>Answer</h3>
+      <div id="answer"></div>
+    </div>
+
+    <div class="card">
+      <h2>AI Notes Generator</h2>
+
+      <input id="topic" placeholder="Topic / Chapter Name" />
+      <input id="subject" placeholder="Subject e.g. Science" />
+      <input id="class_name" placeholder="Class e.g. 10th" />
+
+      <select id="language">
+        <option>Hindi</option>
+        <option>English</option>
+        <option>Hindi + English</option>
+      </select>
+
+      <button onclick="generateNotes()">Generate Notes</button>
+      <button onclick="downloadPDF()">Download PDF</button>
+
+      <h3>Generated Notes</h3>
+      <div id="notes"></div>
+    </div>
+  </div>
+
+  <script>
+    const SCREEN_KEYWORDS = [
+      "meri screen par kya hai",
+      "screen me kya dikh raha hai",
+      "is page ko samjhao",
+      "screen",
+      "page",
+      "tab",
+      "window",
+      "display",
+      "kya dikh raha hai",
+      "kya likha hai",
+      "ye page",
+      "ye screen"
+    ];
+
+    function shouldUseScreen(question) {
+      const q = question.toLowerCase().trim();
+      return SCREEN_KEYWORDS.some(keyword => q.includes(keyword));
+    }
+
+    async function captureScreenImage() {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const video = document.createElement("video");
+      video.srcObject = stream;
+
+      await video.play();
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      stream.getTracks().forEach(track => track.stop());
+
+      return canvas.toDataURL("image/png");
+    }
+
+    async function askLeo() {
+      const question = document.getElementById("question").value.trim();
+      const answerBox = document.getElementById("answer");
+
+      if (!question) {
+        answerBox.innerText = "Pehle sawal likho.";
+        return;
+      }
+
+      try {
+        let image = null;
+        const useScreen = shouldUseScreen(question);
+
+        if (useScreen) {
+          answerBox.innerText = "Screen capture ho raha hai...";
+          image = await captureScreenImage();
+        } else {
+          answerBox.innerText = "Leo soch raha hai...";
+        }
+
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            question,
+            image
+          })
+        });
+
+        const data = await res.json();
+        answerBox.innerText = data.answer || "Koi answer nahi mila.";
+      } catch (error) {
+        answerBox.innerText = "Error: " + error;
+      }
+    }
+
+    async function generateNotes() {
+      const topic = document.getElementById("topic").value.trim();
+      const subject = document.getElementById("subject").value.trim();
+      const class_name = document.getElementById("class_name").value.trim();
+      const language = document.getElementById("language").value;
+      const notesBox = document.getElementById("notes");
+
+      if (!topic) {
+        notesBox.innerText = "Pehle topic/chapter name likho.";
+        return;
+      }
+
+      notesBox.innerText = "AI Notes generate ho rahe hain...";
+
+      try {
+        const res = await fetch("/generate-notes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            topic,
+            subject,
+            class_name,
+            language
+          })
+        });
+
+        const data = await res.json();
+        notesBox.innerText = data.notes || "Notes generate nahi hua.";
+      } catch (error) {
+        notesBox.innerText = "Error: " + error;
+      }
+    }
+
+    async function downloadPDF() {
+      const notes = document.getElementById("notes").innerText.trim();
+
+      if (!notes || notes === "AI Notes generate ho rahe hain...") {
+        alert("Pehle notes generate karo.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/download-notes-pdf", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ notes })
+        });
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ai_notes.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        alert("PDF download error: " + error);
+      }
+    }
+  </script>
+</body>
+</html>

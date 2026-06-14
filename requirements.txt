@@ -1,0 +1,7 @@
+flask
+pillow
+requests
+pyttsx3
+pyinstaller
+python-dotenv
+reportlab
