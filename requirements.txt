@@ -5,3 +5,4 @@ pyttsx3
 pyinstaller
 python-dotenv
 reportlab
+gunicorn
