@@ -1,288 +1,440 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi-IN">
 <head>
- <meta charset="UTF-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- <title> Assistant</title>
- <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="AI Assistant – Chat, Notes" />
+
+    
+  <!-- ===== PRIMARY SEO ===== -->
+<title>StudyAI - Free AI Chat, Notes Generator, Quiz & PDF for Students</title>
+  <meta name="description" content="Study AI Assistant se Hindi ya English mein kuch bhi poocho. Free AI chat aur automatic notes generator for students — Class 10, 11, 12 aur competitive exams." />
+  <meta name="keywords" content="AI assistant Hindi, AI notes generator, StudyAI, free AI chat Hindi, student notes AI, Hindi AI chatbot, exam notes generator" />
+  <meta name="author" content="StudyAI" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://zivolf.com/" />
+
+  <!-- ===== OPEN GRAPH (WhatsApp, Facebook preview) ===== -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="StudyAI — Free AI Chat & Notes Generator in Hindi" />
+  <meta property="og:description" content="Hindi mein AI se baat karo aur exam ke liye automatic notes banao. Free, fast, no login." />
+  <meta property="og:url" content="https://zivolf.com/" />
+  <meta property="og:image" content="https://zivolf.com/static/og-image.png" />
+  <meta property="og:locale" content="hi_IN" />
+  <meta property="og:site_name" content="StudyAI" />
+
+  <!-- ===== TWITTER CARD ===== -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="StudyAI — Free AI Chat & Notes in Hindi" />
+  <meta name="twitter:description" content="Hindi AI assistant for students. Free notes generator for Class 10-12." />
+  <meta name="twitter:image" content="https://zivolf.com/static/og-image.png" />
+
+  <!-- ===== THEME / PWA ===== -->
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" type="image/png" href="/static/favicon.png" />
+  <link rel="apple-touch-icon" href="/static/favicon.png" />
+
+  <!-- Preconnect to AI API for faster first request -->
+<link rel="preconnect" href="https://openrouter.ai" />
+<link rel="dns-prefetch" href="https://openrouter.ai" />
+
+  <!-- ===== STRUCTURED DATA (JSON-LD) ===== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "StudyAI",
+    "url": "https://zivolf.com/",
+    "description": "Free AI chat and notes generator in Hindi for Indian students.",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "inLanguage": ["hi", "en"],
+    "author": {
+      "@type": "Organization",
+      "name": "StudyAI"
+    }
+  }
+  </script>
+  
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
- <div class="box">
-   <h1> Assistant</h1>
 
-   <div class="card">
-     <h2>AI Chat</h2>
-     <textarea id="question" placeholder=""></textarea>
-     <button onclick="askLeo()">Ask</button>
+<div class="container">
 
-     <h3>Answer</h3>
-     <div id="answer"></div>
-   </div>
+  <!-- HEADER -->
+<header class="site-header">
+  <div class="logo">
+    <span style="font-size:2rem;" aria-hidden="true">🤖</span>
+    <h1>StudyAI</h1>
+  </div>
+  <p class="tagline">Aapka Personal AI Assistant &mdash; Hindi &amp; English mein</p>
+  <!-- Hidden but crawlable context for Google -->
+  <p class="sr-only">Free AI chatbot aur notes generator for Indian students. Class 10, 11, 12 ke liye Hindi mein notes generate kare.</p>
+</header>
+  <!-- TABS -->
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab-btn active" role="tab" aria-selected="true"
+            aria-controls="section-chat" onclick="switchTab('chat', this)">
+      💬 AI Chat
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            aria-controls="section-notes" onclick="switchTab('notes', this)">
+      📝 Notes Generator
+    </button>
+  </nav>
 
-   <div class="card">
-     <h2>AI Notes Generator</h2>
+  <!-- ==================== -->
+  <!-- SECTION: AI CHAT     -->
+  <!-- ==================== -->
+  <section id="section-chat" class="section active" role="tabpanel" aria-label="AI Chat">
+    <div class="card">
+      <h2><span class="icon">💬</span> AI Chat</h2>
 
-     <input id="topic" placeholder="Topic / Chapter Name" />
-     <input id="subject" placeholder="Subject e.g. Science" />
-     <input id="class_name" placeholder="Class e.g. 10th" />
+      <div class="form-group">
+        <label class="field-label" for="question">Apna sawal likho</label>
+        <textarea
+          id="question"
+          placeholder="Ask anything..."
+          aria-label="Question input"
+        ></textarea>
+      </div>
 
-     <select id="language">
-       <option>Hindi</option>
-       <option>English</option>
-       <option>Hindi + English</option>
-     </select>
+      <div class="btn-row">
+        <button id="btn-ask" onclick="askLeo()">
+          <span>🚀</span> Ask
+        </button>
+        <button class="secondary" onclick="clearChat()">
+          🗑️ Clear
+        </button>
+      </div>
 
-     <button onclick="generateNotes()">Generate Notes</button>
-     <button onclick="downloadPDF()">Download PDF</button>
+      <div class="status-bar" id="chat-status">
+        <span class="spinner"></span>
+        <span id="chat-status-text">The answer is coming...</span>
+      </div>
 
-     <h3>Generated Notes</h3>
-     <div id="notes"></div>
-   </div>
- </div>
+      <h3>Jawab</h3>
+      <div id="answer" class="output-box empty" aria-live="polite" aria-label="AI Answer">
+        The answer will appear here...
+      </div>
+    </div>
+  </section>
 
- <script>
-   const SCREEN_KEYWORDS = [
-     "meri screen par kya hai",
-     "screen me kya dikh raha hai",
-     "is page ko samjhao",
-     "screen",
-     "page",
-     "tab",
-     "window",
-     "display",
-     "kya dikh raha hai",
-     "kya likha hai",
-     "ye page",
-     "ye screen"
-   ];
+  <!-- ========================= -->
+  <!-- SECTION: NOTES GENERATOR  -->
+  <!-- ========================= -->
+  <section id="section-notes" class="section" role="tabpanel" aria-label="Notes Generator">
+    <div class="card">
+      <h2><span class="icon">📝</span> AI Notes Generator</h2>
 
-   let notesContent = "";
-   let chatContent = "";
+      <div class="form-group">
+        <label class="field-label" for="topic">Topic / Chapter Name *</label>
+        <input type="text" id="topic" placeholder="e.g. Photosynthesis, Mughal Empire" aria-required="true" />
+      </div>
 
-   function shouldUseScreen(question) {
-     const q = question.toLowerCase().trim();
-     return SCREEN_KEYWORDS.some(keyword => q.includes(keyword));
-   }
+      <div class="input-grid">
+        <div class="form-group">
+          <label class="field-label" for="subject">Subject</label>
+          <input type="text" id="subject" placeholder="e.g. Science, History" />
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="class_name">Class</label>
+          <input type="text" id="class_name" placeholder="e.g. 10th, 12th" />
+        </div>
+        <div class="form-group full-width">
+          <label class="field-label" for="language">Language</label>
+          <select id="language" aria-label="Notes language">
+            <option value="Hindi">🇮🇳 Hindi</option>
+            <option value="English">🇬🇧 English</option>
+            <option value="Hindi + English">🌐 Hindi + English (Hinglish)</option>
+          </select>
+        </div>
+      </div>
 
-   async function captureScreenImage() {
-     try {
-       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-       const video = document.createElement("video");
-       video.srcObject = stream;
+      <div class="btn-row">
+        <button id="btn-notes" onclick="generateNotes()">
+          <span>✨</span> Generate Notes
+        </button>
+        <button class="secondary" id="btn-pdf" onclick="downloadPDF()" disabled>
+          <span>📄</span> PDF Download
+        </button>
+        <button class="secondary" onclick="clearNotes()">
+          🗑️ Clear
+        </button>
+      </div>
 
-       await video.play();
+      <div class="status-bar" id="notes-status">
+        <span class="spinner"></span>
+        <span id="notes-status-text">Notes are being generated...</span>
+      </div>
 
-       const canvas = document.createElement("canvas");
-       canvas.width = video.videoWidth || 1280;
-       canvas.height = video.videoHeight || 720;
+      <h3>Generated Notes</h3>
+      <div id="notes" class="output-box empty" aria-live="polite" aria-label="Generated Notes">
+        Notes will appear here...
+      </div>
+    </div>
+  </section>
 
-       const ctx = canvas.getContext("2d");
-       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+</div><!-- /container -->
 
-       stream.getTracks().forEach(track => track.stop());
+<footer class="site-footer">
+  <p>Made with ❤️ &mdash; StudyAI v2.0</p>
+  <p style="margin-top:6px; font-size:0.75rem;">
+    Free AI Chat &bull; Hindi Notes Generator &bull; Student Exam Helper
+  </p>
+</footer>
 
-       return canvas.toDataURL("image/png");
-     } catch (error) {
-       console.error("Screen capture error:", error);
-       return null;
-     }
-   }
+<!-- ================== SCRIPT ================== -->
+<script>
+  /* ---- Tab Switching ---- */
+  function switchTab(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    document.getElementById('section-' + name).classList.add('active');
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-   async function askLeo() {
-     const question = document.getElementById("question").value.trim();
-     const answerBox = document.getElementById("answer");
+  /* ---- State ---- */
+  let notesContent = "";
+  let chatContent  = "";
 
-     if (!question) {
-       answerBox.innerText = "Pehle sawal likho.";
-       return;
-     }
+  /* ---- SSE Stream Reader ---- */
+  async function readStream(response, onChunk, onDone, onError) {
+    const reader  = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
 
-     // Clear previous content
-     answerBox.innerText = "";
-     chatContent = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n\n");
+      buffer = lines.pop() || "";
 
-     try {
-       let image = null;
-       const useScreen = shouldUseScreen(question);
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        try {
+          const parsed = JSON.parse(line.slice(6));
+          if (parsed.error) { onError(parsed.error); return; }
+          if (parsed.done)  { onDone();              return; }
+          if (parsed.chunk) { onChunk(parsed.chunk); }
+        } catch (_) {}
+      }
+    }
+    onDone();
+  }
 
-       if (useScreen) {
-         answerBox.innerText = "Screen capture ho raha hai...";
-         image = await captureScreenImage();
-         if (!image) {
-           answerBox.innerText = "Screen capture failed. Please allow screen sharing.";
-           return;
-         }
-       }
+  /* ---- UI Helpers ---- */
+  function setStatus(id, visible, text) {
+    const bar = document.getElementById(id + '-status');
+    const txt = document.getElementById(id + '-status-text');
+    bar.classList.toggle('visible', visible);
+    if (text && txt) txt.textContent = text;
+  }
 
-       const res = await fetch("/ask-stream", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json"
-         },
-         body: JSON.stringify({
-           question,
-           image
-         })
-       });
+  function setOutputEmpty(el, msg) {
+    el.textContent = msg;
+    el.classList.add('empty');
+  }
 
-       if (!res.ok) {
-         const errorData = await res.json();
-         answerBox.innerText = "Error: " + (errorData.error || "Unknown error");
-         return;
-       }
+  function appendOutput(el, chunk) {
+    if (el.classList.contains('empty')) {
+      el.textContent = '';
+      el.classList.remove('empty');
+    }
+    el.textContent += chunk;
+    el.scrollTop = el.scrollHeight;
+  }
 
-       const reader = res.body.getReader();
-       const decoder = new TextDecoder();
-       let buffer = "";
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.disabled = loading;
+  }
 
-       while (true) {
-         const { done, value } = await reader.read();
-         if (done) break;
+  /* ---- ASK LEO ---- */
+  async function askLeo() {
+    const question  = document.getElementById("question").value.trim();
+    const answerBox = document.getElementById("answer");
 
-         buffer += decoder.decode(value, { stream: true });
-         const lines = buffer.split("\n\n");
-         buffer = lines.pop() || "";
+    if (!question) {
+      setOutputEmpty(answerBox, "⚠️ Pehle sawal likho.");
+      return;
+    }
 
-         for (const line of lines) {
-           if (line.startsWith("data: ")) {
-             const data = line.slice(6);
-             try {
-               const parsed = JSON.parse(data);
-               if (parsed.error) {
-                 answerBox.innerText = "Error: " + parsed.error;
-                 return;
-               }
-               if (parsed.done) {
-                 break;
-               }
-               if (parsed.chunk) {
-                 chatContent += parsed.chunk;
-                 answerBox.innerText = chatContent;
-                 answerBox.scrollTop = answerBox.scrollHeight;
-               }
-             } catch (e) {
-               // Skip invalid JSON
-             }
-           }
-         }
-       }
-     } catch (error) {
-       answerBox.innerText = "Error: " + error.message;
-     }
-   }
+    chatContent = "";
+    setOutputEmpty(answerBox, "");
+    setLoading("btn-ask", true);
+    setStatus("chat", true, "🤖 Jawab aa raha hai...");
 
-   async function generateNotes() {
-     const topic = document.getElementById("topic").value.trim();
-     const subject = document.getElementById("subject").value.trim();
-     const class_name = document.getElementById("class_name").value.trim();
-     const language = document.getElementById("language").value;
-     const notesBox = document.getElementById("notes");
+    try {
+      const res = await fetch("/ask-stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
 
-     if (!topic) {
-       notesBox.innerText = "Pehle topic/chapter name likho.";
-       return;
-     }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setOutputEmpty(answerBox, "❌ Error: " + (err.error || "Unknown error"));
+        setStatus("chat", false);
+        setLoading("btn-ask", false);
+        return;
+      }
 
-     // Clear previous content
-     notesBox.innerText = "";
-     notesContent = "";
+      await readStream(
+        res,
+        chunk => { chatContent += chunk; appendOutput(answerBox, chunk); },
+        ()    => { setStatus("chat", false); setLoading("btn-ask", false); },
+        err   => { setOutputEmpty(answerBox, "❌ Error: " + err); setStatus("chat", false); setLoading("btn-ask", false); }
+      );
 
-     try {
-       const res = await fetch("/generate-notes-stream", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json"
-         },
-         body: JSON.stringify({
-           topic,
-           subject,
-           class_name,
-           language
-         })
-       });
+    } catch (err) {
+      setOutputEmpty(answerBox, "❌ Error: " + err.message);
+      setStatus("chat", false);
+      setLoading("btn-ask", false);
+    }
+  }
 
-       if (!res.ok) {
-         const errorData = await res.json();
-         notesBox.innerText = "Error: " + (errorData.error || "Unknown error");
-         return;
-       }
+  function clearChat() {
+    chatContent = "";
+    setOutputEmpty(document.getElementById("answer"), "Yahan jawab dikhega...");
+    document.getElementById("question").value = "";
+  }
 
-       const reader = res.body.getReader();
-       const decoder = new TextDecoder();
-       let buffer = "";
+  /* ---- GENERATE NOTES ---- */
+  async function generateNotes() {
+    const topic      = document.getElementById("topic").value.trim();
+    const subject    = document.getElementById("subject").value.trim();
+    const class_name = document.getElementById("class_name").value.trim();
+    const language   = document.getElementById("language").value;
+    const notesBox   = document.getElementById("notes");
 
-       while (true) {
-         const { done, value } = await reader.read();
-         if (done) break;
+    if (!topic) {
+      setOutputEmpty(notesBox, "⚠️ Pehle topic/chapter name likho.");
+      return;
+    }
 
-         buffer += decoder.decode(value, { stream: true });
-         const lines = buffer.split("\n\n");
-         buffer = lines.pop() || "";
+    notesContent = "";
+    setOutputEmpty(notesBox, "");
+    setLoading("btn-notes", true);
+    setLoading("btn-pdf", true);
+    setStatus("notes", true, "✨ Notes generate ho rahi hain...");
 
-         for (const line of lines) {
-           if (line.startsWith("data: ")) {
-             const data = line.slice(6);
-             try {
-               const parsed = JSON.parse(data);
-               if (parsed.error) {
-                 notesBox.innerText = "Error: " + parsed.error;
-                 return;
-               }
-               if (parsed.done) {
-                 break;
-               }
-               if (parsed.chunk) {
-                 notesContent += parsed.chunk;
-                 notesBox.innerText = notesContent;
-                 notesBox.scrollTop = notesBox.scrollHeight;
-               }
-             } catch (e) {
-               // Skip invalid JSON
-             }
-           }
-         }
-       }
-     } catch (error) {
-       notesBox.innerText = "Error: " + error.message;
-     }
-   }
+    try {
+      const res = await fetch("/generate-notes-stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, subject, class_name, language })
+      });
 
-   async function downloadPDF() {
-     if (!notesContent.trim()) {
-       alert("Pehle notes generate karo.");
-       return;
-     }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setOutputEmpty(notesBox, "❌ Error: " + (err.error || "Unknown error"));
+        setStatus("notes", false);
+        setLoading("btn-notes", false);
+        return;
+      }
 
-     try {
-       const res = await fetch("/download-notes-pdf", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json"
-         },
-         body: JSON.stringify({ notes: notesContent })
-       });
+      await readStream(
+        res,
+        chunk => { notesContent += chunk; appendOutput(notesBox, chunk); },
+        ()    => {
+          setStatus("notes", false);
+          setLoading("btn-notes", false);
+          if (notesContent.trim()) {
+            document.getElementById("btn-pdf").disabled = false;
+          }
+        },
+        err => {
+          setOutputEmpty(notesBox, "❌ Error: " + err);
+          setStatus("notes", false);
+          setLoading("btn-notes", false);
+        }
+      );
 
-       if (!res.ok) {
-         const errorData = await res.json();
-         alert("PDF download error: " + (errorData.error || "Unknown error"));
-         return;
-       }
+    } catch (err) {
+      setOutputEmpty(notesBox, "❌ Error: " + err.message);
+      setStatus("notes", false);
+      setLoading("btn-notes", false);
+    }
+  }
 
-       const blob = await res.blob();
-       const url = window.URL.createObjectURL(blob);
+  function clearNotes() {
+    notesContent = "";
+    setOutputEmpty(document.getElementById("notes"), "Notes yahan dikhenge...");
+    document.getElementById("topic").value      = "";
+    document.getElementById("subject").value    = "";
+    document.getElementById("class_name").value = "";
+    document.getElementById("btn-pdf").disabled = true;
+  }
 
-       const a = document.createElement("a");
-       a.href = url;
-       a.download = "ai_notes.pdf";
-       document.body.appendChild(a);
-       a.click();
-       a.remove();
+  /* ---- DOWNLOAD PDF ---- */
+  async function downloadPDF() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Pehle notes generate karo.");
+      return;
+    }
 
-       window.URL.revokeObjectURL(url);
-     } catch (error) {
-       alert("PDF download error: " + error.message);
-     }
-   }
- </script>
+    const btn = document.getElementById("btn-pdf");
+    btn.disabled = true;
+    btn.textContent = "⏳ Downloading...";
+
+    try {
+      const res = await fetch("/download-notes-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: notesContent })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert("❌ PDF error: " + (err.error || "Unknown error"));
+        return;
+      }
+
+      const blob = await res.blob();
+      const url  = window.URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href = url;
+      a.download = "leo_ai_notes.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("❌ PDF error: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "<span>📄</span> PDF Download";
+    }
+  }
+
+  /* ---- Enter key shortcut for chat ---- */
+  document.addEventListener("DOMContentLoaded", () => {
+    const q = document.getElementById("question");
+    if (q) {
+      q.addEventListener("keydown", e => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          askLeo();
+        }
+      });
+    }
+  });
+</script>
+
 </body>
 </html>
