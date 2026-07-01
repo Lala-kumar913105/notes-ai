@@ -10,10 +10,11 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # ✅ Model priority list - automatic fallback
+
 MODELS = [
-    "openai/gpt-5.3-codex",   # 1st choice - fastest, best Hindi
-    "deepseek/deepseek-r1-0528",           # 2nd choice - smart reasoning
-    "meta-llama/llama-4-maverick",    # 3rd fallback
+    "meta-llama/llama-4-maverick",  
+    "deepseek/deepseek-v3.2-exp",           
+    "deepseek/deepseek-r1-0528",    
 ]
 
 # ✅ In codes pe next model try hoga
