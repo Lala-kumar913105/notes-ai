@@ -16,6 +16,10 @@ app = Flask(__name__)
 def home():
     return render_template("index.html")
 
+@app.route("/privacy-policy")
+def privacy_policy():
+    return render_template("privacy.html")
+
 # ... existing imports ...
 
 @app.route("/sitemap.xml")
