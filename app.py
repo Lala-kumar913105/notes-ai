@@ -49,6 +49,10 @@ Disallow: /download-notes-pdf
 Sitemap: https://zivolf.com/sitemap.xml"""
     return Response(robots_txt, mimetype="text/plain")
 
+@app.route("/ads.txt")
+def ads_txt():
+    return app.send_static_file("ads.txt")
+
 # =========================
 # AI CHAT (STREAMING)
 # =========================
