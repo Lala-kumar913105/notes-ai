@@ -312,6 +312,22 @@ button:disabled {
   font-style: italic;
 }
 
+/* === IMAGE OUTPUT (Image Generator tab) === */
+.image-output {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 10px;
+}
+ 
+.image-output img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
 /* === SECTION VISIBILITY === */
 .section { display: none; }
 .section.active { display: block; }

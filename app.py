@@ -8,6 +8,10 @@ import os
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import json
+from image_gen import generate_image_base64
+from video_gen import generate_video_file
+from music_gen import generate_music_base64
+
 
 app = Flask(__name__)
 
@@ -45,6 +49,11 @@ Allow: /
 Disallow: /ask-stream
 Disallow: /generate-notes-stream
 Disallow: /download-notes-pdf
+Disallow: /generate-blog-stream
+Disallow: /generate-image
+Disallow: /generate-video
+Disallow: /generate-music
+Disallow: /static/generated/
 
 Sitemap: https://zivolf.com/sitemap.xml"""
     return Response(robots_txt, mimetype="text/plain")
@@ -123,6 +132,123 @@ Notes simple aur exam oriented hone chahiye.
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return Response(stream_with_context(generate()), mimetype="text/event-stream")
+
+# =========================
+# AI BLOG WRITER (STREAMING)
+# =========================
+
+@app.route("/generate-blog-stream", methods=["POST"])
+def generate_blog_stream():
+    data = request.get_json(silent=True) or {}
+    topic    = data.get("topic", "").strip()
+    tone     = data.get("tone", "Professional").strip()
+    length   = data.get("length", "Medium (600-800 words)").strip()
+    keywords = data.get("keywords", "").strip()
+    language = data.get("language", "Hindi").strip()
+
+    if not topic:
+        return jsonify({"error": "Blog topic khaali hai."}), 400
+
+    prompt = f"""
+Tum ek professional content writer aur SEO expert ho.
+
+Ek blog post likho is topic par:
+
+Topic: {topic}
+Tone: {tone}
+Length: {length}
+Target keywords: {keywords if keywords else "N/A"}
+Language: {language}
+
+Blog format:
+1. Catchy SEO Title
+2. Short Introduction (hook)
+3. Main Body (headings/subheadings ke sath, well structured)
+4. Bullet points jaha zarurat ho
+5. Conclusion
+6. Call to Action
+
+Blog engaging, SEO-friendly aur original hona chahiye.
+"""
+
+    def generate():
+        try:
+            for chunk in ask_leo_stream(question=prompt, stream=True):
+                yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
+
+# =========================
+# AI IMAGE GENERATOR
+# =========================
+
+@app.route("/generate-image", methods=["POST"])
+def generate_image_route():
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt", "").strip()
+
+    if not prompt:
+        return jsonify({"error": "Prompt khaali hai."}), 400
+
+    try:
+        image_data_uri = generate_image_base64(prompt)
+        return jsonify({"image": image_data_uri})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 503
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# =========================
+# AI VIDEO GENERATOR
+# =========================
+ 
+@app.route("/generate-video", methods=["POST"])
+def generate_video_route():
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt", "").strip()
+ 
+    if not prompt:
+        return jsonify({"error": "Prompt khaali hai."}), 400
+ 
+    try:
+        video_url = generate_video_file(prompt)
+        return jsonify({"video": video_url})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 503
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# =========================
+# AI MUSIC GENERATOR
+# =========================
+ 
+@app.route("/generate-music", methods=["POST"])
+def generate_music_route():
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt", "").strip()
+    duration = data.get("duration", 10)
+ 
+    if not prompt:
+        return jsonify({"error": "Prompt khaali hai."}), 400
+ 
+    try:
+        duration = int(duration)
+    except (TypeError, ValueError):
+        duration = 10
+ 
+    # Keep duration within a safe range for free-tier / cold-start APIs
+    duration = max(5, min(duration, 15))
+ 
+    try:
+        music_data_uri = generate_music_base64(prompt, duration)
+        return jsonify({"music": music_data_uri})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 503
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # =========================

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi-IN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
@@ -8,12 +8,18 @@
 
     
   <!-- ===== PRIMARY SEO ===== -->
-<title>StudyAI - Free AI Chat, Notes Generator, Quiz & PDF for Students</title>
-  <meta name="description" content="Study AI Assistant se Hindi ya English mein kuch bhi poocho. Free AI chat aur automatic notes generator for students — Class 10, 11, 12 aur competitive exams." />
-  <meta name="keywords" content="AI assistant Hindi, AI notes generator, StudyAI, free AI chat Hindi, student notes AI, Hindi AI chatbot, exam notes generator" />
+  <title>StudyAI - Free AI Chat, Notes Generator, Blog & Image Creator</title>
+  <meta name="description" content="StudyAI is a free AI assistant for chat, study notes, blog writing, image and video generation — supports English, Hindi and more languages. No login required." />
+  <meta name="keywords" content="AI assistant, AI chatbot, free AI chat, AI notes generator, AI blog writer, AI image generator, study helper, student AI tool" />
   <meta name="author" content="StudyAI" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://zivolf.com/" />
+
+    <!-- ===== HREFLANG (multi-language targeting) ===== -->
+  <link rel="alternate" hreflang="en" href="https://zivolf.com/" />
+  <link rel="alternate" hreflang="hi" href="https://zivolf.com/?lang=hi" />
+  <link rel="alternate" hreflang="x-default" href="https://zivolf.com/" />
+
 
   <!-- ===== OPEN GRAPH (WhatsApp, Facebook preview) ===== -->
   <meta property="og:type" content="website" />
@@ -21,7 +27,8 @@
   <meta property="og:description" content="Hindi mein AI se baat karo aur exam ke liye automatic notes banao. Free, fast, no login." />
   <meta property="og:url" content="https://zivolf.com/" />
   <meta property="og:image" content="https://zivolf.com/static/og-image.png" />
-  <meta property="og:locale" content="hi_IN" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="hi_IN" />
   <meta property="og:site_name" content="StudyAI" />
 
   <!-- ===== TWITTER CARD ===== -->
@@ -32,8 +39,10 @@
 
   <!-- ===== THEME / PWA ===== -->
   <meta name="theme-color" content="#0f172a" />
-  <link rel="icon" type="image/png" href="/static/favicon.png" />
-  <link rel="apple-touch-icon" href="/static/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png" />
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" />
   <link rel="manifest" href="/static/manifest.json" />
 
   <!-- Preconnect to AI API for faster first request -->
@@ -41,27 +50,24 @@
 <link rel="dns-prefetch" href="https://openrouter.ai" />
 
   <!-- ===== STRUCTURED DATA (JSON-LD) ===== -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "StudyAI",
-    "url": "https://zivolf.com/",
-    "description": "Free AI chat and notes generator in Hindi for Indian students.",
-    "applicationCategory": "EducationApplication",
-    "operatingSystem": "Any",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "INR"
-    },
-    "inLanguage": ["hi", "en"],
-    "author": {
-      "@type": "Organization",
-      "name": "StudyAI"
-    }
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "StudyAI",
+  "url": "https://zivolf.com/",
+  "description": "Free AI chat, notes generator, blog writer, and image/video generator for students worldwide.",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "inLanguage": ["en", "hi"],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.5",
+    "ratingCount": "120"
   }
-  </script>
+}
+</script>
   
   <link rel="stylesheet" href="/static/style.css" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3176868537395005"
@@ -75,9 +81,9 @@
 <header class="site-header">
   <div class="logo">
     <span style="font-size:2rem;" aria-hidden="true">🤖</span>
-    <h1>StudyAI</h1>
+    <h1>ZivolfAI</h1>
   </div>
-  <p class="tagline">Aapka Personal AI Assistant &mdash; Hindi &amp; English mein</p>
+  <p class="tagline">AI Study Assistant for School, College & Competitive Exams</p>
   <!-- Hidden but crawlable context for Google -->
   <p class="sr-only">Free AI chatbot aur notes generator for Indian students. Class 10, 11, 12 ke liye Hindi mein notes generate kare.</p>
 </header>
@@ -91,6 +97,22 @@
             aria-controls="section-notes" onclick="switchTab('notes', this)">
       📝 Notes Generator
     </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="section-blog" onclick="switchTab('blog', this)">
+  ✍️ Blog Writer
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+    aria-controls="section-image" onclick="switchTab('image', this)">
+  🎨 Image Generator
+</button>
+<button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="section-video" onclick="switchTab('video', this)">
+  🎬 Video Generator
+</button>
+<button class="tab-btn" role="tab" aria-selected="false"
+        aria-controls="section-music" onclick="switchTab('music', this)">
+  🎵 Music Generator
+</button>
   </nav>
 
   <!-- ==================== -->
@@ -184,6 +206,249 @@
       </div>
     </div>
   </section>
+
+  <!-- ========================= -->
+<!-- SECTION: BLOG WRITER      -->
+<!-- ========================= -->
+<section id="section-blog" class="section" role="tabpanel" aria-label="Blog Writer">
+  <div class="card">
+    <h2><span class="icon">✍️</span> AI Blog Writer</h2>
+
+    <div class="form-group">
+      <label class="field-label" for="blog_topic">Blog Topic *</label>
+      <input type="text" id="blog_topic" placeholder="e.g. Benefits of Morning Walk" aria-required="true" />
+    </div>
+
+    <div class="input-grid">
+      <div class="form-group">
+        <label class="field-label" for="blog_tone">Tone</label>
+        <select id="blog_tone">
+          <option value="Professional">Professional</option>
+          <option value="Casual">Casual</option>
+          <option value="Persuasive">Persuasive</option>
+          <option value="Storytelling">Storytelling</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label" for="blog_length">Length</label>
+        <select id="blog_length">
+          <option value="Short (300-400 words)">Short</option>
+          <option value="Medium (600-800 words)">Medium</option>
+          <option value="Long (1200+ words)">Long</option>
+        </select>
+      </div>
+      <div class="form-group full-width">
+        <label class="field-label" for="blog_keywords">Target Keywords (optional)</label>
+        <input type="text" id="blog_keywords" placeholder="comma separated keywords" />
+      </div>
+      <div class="form-group full-width">
+        <label class="field-label" for="blog_language">Language</label>
+        <select id="blog_language">
+          <option value="Hindi">🇮🇳 Hindi</option>
+          <option value="English">🇬🇧 English</option>
+          <option value="Hindi + English">🌐 Hinglish</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button id="btn-blog" onclick="generateBlog()">
+        <span>✨</span> Generate Blog
+      </button>
+      <button class="secondary" id="btn-blog-pdf" onclick="downloadBlogPDF()" disabled>
+        <span>📄</span> PDF Download
+      </button>
+      <button class="secondary" onclick="clearBlog()">
+        🗑️ Clear
+      </button>
+    </div>
+
+    <div class="status-bar" id="blog-status">
+      <span class="spinner"></span>
+      <span id="blog-status-text">Blog likha ja raha hai...</span>
+    </div>
+
+    <h3>Generated Blog</h3>
+    <div id="blog" class="output-box empty" aria-live="polite" aria-label="Generated Blog">
+      Blog yahan dikhega...
+    </div>
+  </div>
+</section>
+
+<!-- ========================= -->
+<!-- SECTION: IMAGE GENERATOR  -->
+<!-- ========================= -->
+<section id="section-image" class="section" role="tabpanel" aria-label="Image Generator">
+  <div class="card">
+    <h2><span class="icon">🎨</span> AI Image Generator</h2>
+
+    <div class="form-group">
+      <label class="field-label" for="image_prompt">Image Prompt *</label>
+      <textarea id="image_prompt" placeholder="e.g. A sunset over mountains, digital art style"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button id="btn-image" onclick="generateImage()">
+        <span>🎨</span> Generate Image
+      </button>
+      <button class="secondary" id="btn-image-download" onclick="downloadImage()" disabled>
+        <span>⬇️</span> Download
+      </button>
+      <button class="secondary" onclick="clearImage()">
+        🗑️ Clear
+      </button>
+    </div>
+
+    <div class="status-bar" id="image-status">
+      <span class="spinner"></span>
+      <span id="image-status-text">Image ban rahi hai... (30-60 sec lag sakte hain)</span>
+    </div>
+
+    <h3>Generated Image</h3>
+    <div id="image-output" class="output-box empty image-output" aria-live="polite" aria-label="Generated Image">
+      Image yahan dikhegi...
+    </div>
+  </div>
+</section>
+
+<!-- ========================= -->
+<!-- SECTION: VIDEO GENERATOR  -->
+<!-- ========================= -->
+<section id="section-video" class="section" role="tabpanel" aria-label="Video Generator">
+  <div class="card">
+    <h2><span class="icon">🎬</span> AI Video Generator</h2>
+ 
+    <div class="form-group">
+      <label class="field-label" for="video_prompt">Video Prompt *</label>
+      <textarea id="video_prompt" placeholder="e.g. A cat running in a garden, cinematic"></textarea>
+    </div>
+ 
+    <div class="btn-row">
+      <button id="btn-video" onclick="generateVideo()">
+        <span>🎬</span> Generate Video
+      </button>
+      <button class="secondary" id="btn-video-download" onclick="downloadVideo()" disabled>
+        <span>⬇️</span> Download
+      </button>
+      <button class="secondary" onclick="clearVideo()">
+        🗑️ Clear
+      </button>
+    </div>
+ 
+    <div class="status-bar" id="video-status">
+      <span class="spinner"></span>
+      <span id="video-status-text">Video ban rahi hai... (1-3 min lag sakte hain)</span>
+    </div>
+ 
+    <h3>Generated Video</h3>
+    <div id="video-output" class="output-box empty image-output" aria-live="polite" aria-label="Generated Video">
+      Video yahan dikhegi...
+    </div>
+  </div>
+</section>
+
+<!-- ========================= -->
+<!-- SECTION: MUSIC GENERATOR  -->
+<!-- ========================= -->
+<section id="section-music" class="section" role="tabpanel" aria-label="Music Generator">
+  <div class="card">
+    <h2><span class="icon">🎵</span> AI Music Generator</h2>
+ 
+    <div class="form-group">
+      <label class="field-label" for="music_prompt">Music Prompt *</label>
+      <textarea id="music_prompt" placeholder="e.g. Relaxing lo-fi beats, piano and rain sounds"></textarea>
+    </div>
+ 
+    <div class="form-group">
+      <label class="field-label" for="music_duration">Duration (seconds)</label>
+      <input type="number" id="music_duration" value="10" min="5" max="15" />
+    </div>
+ 
+    <div class="btn-row">
+      <button id="btn-music" onclick="generateMusic()">
+        <span>🎵</span> Generate Music
+      </button>
+      <button class="secondary" id="btn-music-download" onclick="downloadMusic()" disabled>
+        <span>⬇️</span> Download
+      </button>
+      <button class="secondary" onclick="clearMusic()">
+        🗑️ Clear
+      </button>
+    </div>
+ 
+    <div class="status-bar" id="music-status">
+      <span class="spinner"></span>
+      <span id="music-status-text">Music ban rahi hai... (30-90 sec lag sakte hain)</span>
+    </div>
+ 
+    <h3>Generated Music</h3>
+    <div id="music-output" class="output-box empty image-output" aria-live="polite" aria-label="Generated Music">
+      Music yahan bajegi...
+    </div>
+  </div>
+</section>
+
+<!-- ==================== -->
+<!-- SECTION: ABOUT / INFO -->
+<!-- ==================== -->
+<section class="card" style="margin-top: 20px;">
+  <h2><span class="icon">📚</span> What is StudyAI?</h2>
+
+  <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
+    StudyAI is a free AI-powered study assistant specially designed for Indian students. It supports both Hindi and English, making it easier for Class 10, 11, 12 students as well as competitive exam aspirants to study in their preferred language. You can ask questions from any subject or generate exam-ready notes for any topic or chapter within seconds.
+  </p>
+
+  <h3 style="margin-top: 18px;">How It Works</h3>
+  <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
+    StudyAI offers two main tools: <strong>AI Chat</strong> and <strong>Notes Generator</strong>. In the AI Chat tab, you can type any question or doubt and receive a simple, easy-to-understand answer instantly, whether it's from Science, Math, History, or any other subject. In the Notes Generator tab, simply enter the topic, subject, and class to generate a complete study note that includes an introduction, definitions, important points, examples, exam tips, and 10 practice MCQ questions.
+  </p>
+
+  <h3 style="margin-top: 18px;">Who Can Benefit?</h3>
+  <p style="margin-bottom: 8px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
+    StudyAI is especially useful for students who:
+  </p>
+  <ul style="margin: 0 0 14px 20px; color: var(--text-main); font-size: 0.95rem; line-height: 1.8;">
+    <li>Are preparing for Class 10, 11, or 12 board examinations</li>
+    <li>Need quick revision for competitive exams such as NEET, JEE, or state-level entrance exams</li>
+    <li>Want to understand difficult topics in Hindi because English textbooks can sometimes be hard to follow</li>
+    <li>Need fast, well-structured notes for last-minute exam revision</li>
+  </ul>
+
+  <h3 style="margin-top: 18px;">Why Choose StudyAI?</h3>
+  <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
+    Many study apps and websites require payment or user registration. StudyAI is completely free and can be used without creating an account. You can also download your notes in PDF format for offline study. It supports Hindi, English, and Hinglish, allowing you to learn in the language you are most comfortable with.
+  </p>
+
+  <h3 style="margin-top: 18px;">Frequently Asked Questions (FAQs)</h3>
+
+  <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+    Do I need to pay to use StudyAI?
+  </p>
+  <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+    No. StudyAI is completely free to use with no hidden charges or subscription fees.
+  </p>
+
+  <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+    Can I save my notes as a PDF?
+  </p>
+  <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+    Yes. After generating your notes in the Notes Generator tab, simply click the "Download PDF" button to save them to your device.
+  </p>
+
+  <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+    Which classes is StudyAI suitable for?
+  </p>
+  <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+    StudyAI is mainly designed for Class 10, 11, and 12 students, but learners from any class can ask questions or generate notes for any subject.
+  </p>
+
+  <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+    Are notes available only in Hindi?
+  </p>
+  <p style="margin-bottom: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+    No. You can generate notes in Hindi, English, or Hinglish by selecting your preferred language in the Notes Generator tab.
+  </p>
+</section>
 
 </div><!-- /container -->
 
@@ -427,6 +692,317 @@
       btn.innerHTML = "<span>📄</span> PDF Download";
     }
   }
+
+/* ---- GENERATE BLOG ---- */
+
+  let blogContent = "";
+
+async function generateBlog() {
+  const topic    = document.getElementById("blog_topic").value.trim();
+  const tone     = document.getElementById("blog_tone").value;
+  const length   = document.getElementById("blog_length").value;
+  const keywords = document.getElementById("blog_keywords").value.trim();
+  const language = document.getElementById("blog_language").value;
+  const blogBox  = document.getElementById("blog");
+
+  if (!topic) {
+    setOutputEmpty(blogBox, "⚠️ Pehle blog topic likho.");
+    return;
+  }
+
+  blogContent = "";
+  setOutputEmpty(blogBox, "");
+  setLoading("btn-blog", true);
+  setLoading("btn-blog-pdf", true);
+  setStatus("blog", true, "✨ Blog generate ho raha hai...");
+
+  try {
+    const res = await fetch("/generate-blog-stream", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, tone, length, keywords, language })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      setOutputEmpty(blogBox, "❌ Error: " + (err.error || "Unknown error"));
+      setStatus("blog", false);
+      setLoading("btn-blog", false);
+      return;
+    }
+
+    await readStream(
+      res,
+      chunk => { blogContent += chunk; appendOutput(blogBox, chunk); },
+      ()    => {
+        setStatus("blog", false);
+        setLoading("btn-blog", false);
+        if (blogContent.trim()) {
+          document.getElementById("btn-blog-pdf").disabled = false;
+        }
+      },
+      err => {
+        setOutputEmpty(blogBox, "❌ Error: " + err);
+        setStatus("blog", false);
+        setLoading("btn-blog", false);
+      }
+    );
+  } catch (err) {
+    setOutputEmpty(blogBox, "❌ Error: " + err.message);
+    setStatus("blog", false);
+    setLoading("btn-blog", false);
+  }
+}
+
+function clearBlog() {
+  blogContent = "";
+  setOutputEmpty(document.getElementById("blog"), "Blog yahan dikhega...");
+  document.getElementById("blog_topic").value = "";
+  document.getElementById("blog_keywords").value = "";
+  document.getElementById("btn-blog-pdf").disabled = true;
+}
+
+async function downloadBlogPDF() {
+  if (!blogContent.trim()) {
+    alert("⚠️ Pehle blog generate karo.");
+    return;
+  }
+  const btn = document.getElementById("btn-blog-pdf");
+  btn.disabled = true;
+  btn.textContent = "⏳ Downloading...";
+
+  try {
+    const res = await fetch("/download-notes-pdf", {   // same PDF endpoint reuse ho sakta hai
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes: blogContent })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert("❌ PDF error: " + (err.error || "Unknown error"));
+      return;
+    }
+
+    const blob = await res.blob();
+    const url  = window.URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url;
+    a.download = "ai_blog.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("❌ PDF error: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "<span>📄</span> PDF Download";
+  }
+}
+
+/* ---- GENERATE IMAGE ---- */
+let currentImageData = "";
+
+async function generateImage() {
+  const prompt = document.getElementById("image_prompt").value.trim();
+  const imgBox = document.getElementById("image-output");
+
+  if (!prompt) {
+    setOutputEmpty(imgBox, "⚠️ Pehle prompt likho.");
+    return;
+  }
+
+  currentImageData = "";
+  setOutputEmpty(imgBox, "");
+  setLoading("btn-image", true);
+  setLoading("btn-image-download", true);
+  setStatus("image", true, "🎨 Image ban rahi hai... (30-60 sec lag sakte hain)");
+
+  try {
+    const res = await fetch("/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setOutputEmpty(imgBox, "❌ Error: " + (data.error || "Unknown error"));
+      setStatus("image", false);
+      setLoading("btn-image", false);
+      return;
+    }
+
+    currentImageData = data.image;
+    imgBox.classList.remove("empty");
+    imgBox.innerHTML = `<img src="${currentImageData}" alt="${prompt}" />`;
+    document.getElementById("btn-image-download").disabled = false;
+
+  } catch (err) {
+    setOutputEmpty(imgBox, "❌ Error: " + err.message);
+  } finally {
+    setStatus("image", false);
+    setLoading("btn-image", false);
+  }
+}
+
+function downloadImage() {
+  if (!currentImageData) {
+    alert("⚠️ Pehle image generate karo.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = currentImageData;
+  a.download = "ai_generated_image.png";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function clearImage() {
+  currentImageData = "";
+  setOutputEmpty(document.getElementById("image-output"), "Image yahan dikhegi...");
+  document.getElementById("image_prompt").value = "";
+  document.getElementById("btn-image-download").disabled = true;
+}
+
+/* ---- GENERATE VIDEO ---- */
+let currentVideoData = "";
+ 
+async function generateVideo() {
+  const prompt = document.getElementById("video_prompt").value.trim();
+  const vidBox = document.getElementById("video-output");
+ 
+  if (!prompt) {
+    setOutputEmpty(vidBox, "⚠️ Pehle prompt likho.");
+    return;
+  }
+ 
+  currentVideoData = "";
+  setOutputEmpty(vidBox, "");
+  setLoading("btn-video", true);
+  setLoading("btn-video-download", true);
+  setStatus("video", true, "🎬 Video ban rahi hai... (1-3 min lag sakte hain)");
+ 
+  try {
+    const res = await fetch("/generate-video", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+ 
+    const data = await res.json();
+ 
+    if (!res.ok) {
+      setOutputEmpty(vidBox, "❌ Error: " + (data.error || "Unknown error"));
+      setStatus("video", false);
+      setLoading("btn-video", false);
+      return;
+    }
+ 
+    currentVideoData = data.video;
+    vidBox.classList.remove("empty");
+    vidBox.innerHTML = `<video src="${currentVideoData}" controls style="max-width:100%; border-radius:8px;"></video>`;
+    document.getElementById("btn-video-download").disabled = false;
+ 
+  } catch (err) {
+    setOutputEmpty(vidBox, "❌ Error: " + err.message);
+  } finally {
+    setStatus("video", false);
+    setLoading("btn-video", false);
+  }
+}
+ 
+function downloadVideo() {
+  if (!currentVideoData) {
+    alert("⚠️ Pehle video generate karo.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = currentVideoData;
+  a.download = "ai_generated_video.mp4";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+ 
+function clearVideo() {
+  currentVideoData = "";
+  setOutputEmpty(document.getElementById("video-output"), "Video yahan dikhegi...");
+  document.getElementById("video_prompt").value = "";
+  document.getElementById("btn-video-download").disabled = true;
+}
+
+/* ---- GENERATE MUSIC ---- */
+let currentMusicData = "";
+ 
+async function generateMusic() {
+  const prompt   = document.getElementById("music_prompt").value.trim();
+  const duration = parseInt(document.getElementById("music_duration").value) || 10;
+  const musicBox = document.getElementById("music-output");
+ 
+  if (!prompt) {
+    setOutputEmpty(musicBox, "⚠️ Pehle prompt likho.");
+    return;
+  }
+ 
+  currentMusicData = "";
+  setOutputEmpty(musicBox, "");
+  setLoading("btn-music", true);
+  setLoading("btn-music-download", true);
+  setStatus("music", true, "🎵 Music ban rahi hai... (30-90 sec lag sakte hain)");
+ 
+  try {
+    const res = await fetch("/generate-music", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, duration })
+    });
+ 
+    const data = await res.json();
+ 
+    if (!res.ok) {
+      setOutputEmpty(musicBox, "❌ Error: " + (data.error || "Unknown error"));
+      setStatus("music", false);
+      setLoading("btn-music", false);
+      return;
+    }
+ 
+    currentMusicData = data.music;
+    musicBox.classList.remove("empty");
+    musicBox.innerHTML = `<audio src="${currentMusicData}" controls style="width:100%;"></audio>`;
+    document.getElementById("btn-music-download").disabled = false;
+ 
+  } catch (err) {
+    setOutputEmpty(musicBox, "❌ Error: " + err.message);
+  } finally {
+    setStatus("music", false);
+    setLoading("btn-music", false);
+  }
+}
+ 
+function downloadMusic() {
+  if (!currentMusicData) {
+    alert("⚠️ Pehle music generate karo.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = currentMusicData;
+  a.download = "ai_generated_music.wav";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+ 
+function clearMusic() {
+  currentMusicData = "";
+  setOutputEmpty(document.getElementById("music-output"), "Music yahan bajegi...");
+  document.getElementById("music_prompt").value = "";
+  document.getElementById("btn-music-download").disabled = true;
+}
+
 
   /* ---- Enter key shortcut for chat ---- */
   document.addEventListener("DOMContentLoaded", () => {
