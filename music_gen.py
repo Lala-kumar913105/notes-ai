@@ -1,20 +1,18 @@
 import os
 import base64
-from huggingface_hub import InferenceClient
+import requests
 
-_client = None
-
-def _get_client():
-    global _client
-    if _client is None:
-        _client = InferenceClient(
-            model="facebook/musicgen-small",
-            token=os.environ.get("HUGGINGFACE_API_KEY")
-        )
-    return _client
+API_URL = "https://api-inference.huggingface.co/models/facebook/musicgen-small"
 
 def generate_music_base64(prompt, duration=10):
-    client = _get_client()
-    audio_bytes = client.text_to_speech(prompt)
+    headers = {"Authorization": f"Bearer {os.environ.get('HUGGINGFACE_API_KEY')}"}
+    payload = {"inputs": prompt}
+
+    response = requests.post(API_URL, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        raise Exception(f"HF API error {response.status_code}: {response.text}")
+
+    audio_bytes = response.content
     b64_audio = base64.b64encode(audio_bytes).decode("utf-8")
     return f"data:audio/wav;base64,{b64_audio}"
