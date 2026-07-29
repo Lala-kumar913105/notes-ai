@@ -2,7 +2,7 @@ import os
 import base64
 import requests
 
-API_URL = "https://api-inference.huggingface.co/models/facebook/musicgen-small"
+API_URL = "https://router.huggingface.co/hf-inference/models/facebook/musicgen-small"
 
 def generate_music_base64(prompt, duration=10):
     headers = {"Authorization": f"Bearer {os.environ.get('HUGGINGFACE_API_KEY')}"}
