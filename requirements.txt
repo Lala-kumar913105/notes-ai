@@ -6,4 +6,3 @@ pyinstaller
 python-dotenv
 reportlab
 gunicorn
-huggingface_hub
