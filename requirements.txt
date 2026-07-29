@@ -7,3 +7,5 @@ python-dotenv
 reportlab
 gunicorn
 huggingface_hub
+transformers
+torch
