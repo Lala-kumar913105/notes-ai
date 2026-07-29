@@ -1,23 +1,20 @@
-from transformers import pipeline
-import scipy.io.wavfile
+import os
 import base64
-import io
+from huggingface_hub import InferenceClient
 
-_synthesizer = None
+_client = None
 
-def _get_synthesizer():
-    global _synthesizer
-    if _synthesizer is None:
-        _synthesizer = pipeline("text-to-audio", "facebook/musicgen-small")
-    return _synthesizer
+def _get_client():
+    global _client
+    if _client is None:
+        _client = InferenceClient(
+            model="facebook/musicgen-small",
+            token=os.environ.get("HUGGINGFACE_API_KEY")
+        )
+    return _client
 
 def generate_music_base64(prompt, duration=10):
-    synthesizer = _get_synthesizer()
-    music = synthesizer(prompt, forward_params={"do_sample": True, "max_new_tokens": duration * 50})
-
-    buffer = io.BytesIO()
-    scipy.io.wavfile.write(buffer, rate=music["sampling_rate"], data=music["audio"][0])
-    audio_bytes = buffer.getvalue()
-
+    client = _get_client()
+    audio_bytes = client.text_to_speech(prompt)
     b64_audio = base64.b64encode(audio_bytes).decode("utf-8")
     return f"data:audio/wav;base64,{b64_audio}"
