@@ -17,9 +17,6 @@
   <!-- ===== HREFLANG (multi-language targeting) ===== -->
   <link rel="alternate" hreflang="en" href="https://zivolf.com/" />
   <link rel="alternate" hreflang="hi" href="https://zivolf.com/?lang=hi" />
-  <link rel="alternate" hreflang="es" href="https://zivolf.com/?lang=es" />
-  <link rel="alternate" hreflang="fr" href="https://zivolf.com/?lang=fr" />
-  <link rel="alternate" hreflang="pt" href="https://zivolf.com/?lang=pt" />
   <link rel="alternate" hreflang="x-default" href="https://zivolf.com/" />
 
   <!-- ===== OPEN GRAPH (social preview) ===== -->
@@ -30,8 +27,6 @@
   <meta property="og:image" content="https://zivolf.com/static/og-image.png" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:locale:alternate" content="hi_IN" />
-  <meta property="og:locale:alternate" content="es_ES" />
-  <meta property="og:locale:alternate" content="fr_FR" />
   <meta property="og:site_name" content="StudyAI" />
 
   <!-- ===== TWITTER CARD ===== -->
@@ -47,7 +42,6 @@
   <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" />
   <link rel="manifest" href="/static/manifest.json" />
 
-  <!-- Preconnect to AI API for faster first request -->
   <link rel="preconnect" href="https://openrouter.ai" />
   <link rel="dns-prefetch" href="https://openrouter.ai" />
 
@@ -62,7 +56,7 @@
     "applicationCategory": "EducationApplication",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "inLanguage": ["en", "hi", "es", "fr", "pt"],
+    "inLanguage": ["en", "hi"],
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.5",
@@ -71,40 +65,14 @@
   }
   </script>
 
-  <!-- ===== FAQ STRUCTURED DATA ===== -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Is StudyAI free to use?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. StudyAI is completely free to use with no hidden charges, subscriptions, or sign-up requirements." }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I download my notes as a PDF?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. After generating notes in the Notes Generator tab, click the Download PDF button to save them to your device for offline studying." }
-      },
-      {
-        "@type": "Question",
-        "name": "Which education levels is StudyAI suitable for?",
-        "acceptedAnswer": { "@type": "Answer", "text": "StudyAI works for middle school, high school, college, and university students, as well as anyone preparing for competitive or professional exams." }
-      },
-      {
-        "@type": "Question",
-        "name": "What languages does StudyAI support?",
-        "acceptedAnswer": { "@type": "Answer", "text": "StudyAI currently supports English, Hindi, and Hindi-English (Hinglish), with more languages being added over time." }
-      }
-    ]
-  }
-  </script>
-
   <link rel="stylesheet" href="/static/style.css" />
+
+  <!-- Markdown renderer for AI chat bubbles -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3176868537395005"
      crossorigin="anonymous"></script>
-  <meta name="google-site-verification" content="yOLtSV76cDutJK9pkmooVAi8eLYpWR3sItvgLeuH1ME" />   
+  <meta name="google-site-verification" content="yOLtSV76cDutJK9pkmooVAi8eLYpWR3sItvgLeuH1ME" />
 </head>
 <body>
 
@@ -116,7 +84,7 @@
       <span style="font-size:2rem;" aria-hidden="true">🤖</span>
       <h1>StudyAI</h1>
     </div>
-    <p class="tagline">Free AI Study Assistant for School, College & University Students Worldwide</p>
+    <p class="tagline">Free AI Study Assistant for School, College &amp; University Students Worldwide</p>
     <p class="sr-only">Free AI chatbot and notes generator for students everywhere. Generate exam-ready notes, blogs, images, and videos in seconds.</p>
   </header>
 
@@ -134,9 +102,6 @@
         aria-controls="section-blog" onclick="switchTab('blog', this)">
       ✍️ Blog Writer
     </button>
-    <button class="tab-btn" role="tab" aria-selected="false"
-    aria-controls="section-image" onclick="switchTab('image', this)">
-
   </nav>
 
   <!-- ==================== -->
@@ -146,8 +111,22 @@
     <div class="card">
       <h2><span class="icon">💬</span> AI Chat</h2>
 
-      <div class="form-group">
-        <label class="field-label" for="question">Type your question</label>
+      <div id="chat-window" class="chat-window" aria-live="polite" aria-label="Chat conversation">
+        <div class="chat-empty" id="chat-empty">
+          👋 Ask me anything — math, science, history, grammar, exam prep...<br />
+          Type in <strong>English, Hindi, or Hinglish</strong> — I'll reply in the same language.
+        </div>
+      </div>
+
+      <div id="followup-chips" class="followup-chips"></div>
+
+      <div class="status-bar" id="chat-status">
+        <span class="spinner"></span>
+        <span id="chat-status-text">Thinking...</span>
+      </div>
+
+      <div class="form-group" style="margin-top:10px;">
+        <label class="field-label sr-only" for="question">Type your question</label>
         <textarea
           id="question"
           placeholder="Ask anything..."
@@ -160,18 +139,8 @@
           <span>🚀</span> Ask
         </button>
         <button class="secondary" onclick="clearChat()">
-          🗑️ Clear
+          🗑️ New Chat
         </button>
-      </div>
-
-      <div class="status-bar" id="chat-status">
-        <span class="spinner"></span>
-        <span id="chat-status-text">The answer is coming...</span>
-      </div>
-
-      <h3>Answer</h3>
-      <div id="answer" class="output-box empty" aria-live="polite" aria-label="AI Answer">
-        The answer will appear here...
       </div>
     </div>
   </section>
@@ -229,7 +198,6 @@
         Notes will appear here...
       </div>
 
-      <!-- Static sample so crawlers and first-time visitors see real content immediately -->
       <details style="margin-top:16px;">
         <summary style="cursor:pointer; font-weight:600; color: var(--text-main); font-size:0.95rem;">
           📖 Example: Sample notes for "Photosynthesis" (Grade 10 Science)
@@ -312,7 +280,6 @@
         Your blog will appear here...
       </div>
 
-      <!-- Static sample so crawlers and first-time visitors see real content immediately -->
       <details style="margin-top:16px;">
         <summary style="cursor:pointer; font-weight:600; color: var(--text-main); font-size:0.95rem;">
           📖 Example: Sample blog on "Benefits of Morning Walk"
@@ -334,33 +301,10 @@
     <h2><span class="icon">📚</span> What Is StudyAI?</h2>
 
     <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      StudyAI is a free, AI-powered study assistant built for students anywhere in the world. Whether you're in middle school, high school, college, or preparing for a professional or competitive exam, StudyAI helps you understand difficult topics, generate structured study notes, draft blog posts, and create AI-generated images and videos — all in one place, without any cost or account sign-up.
+      StudyAI is a free, AI-powered study assistant built for students anywhere in the world. Whether you're in middle school, high school, college, or preparing for a professional or competitive exam, StudyAI helps you understand difficult topics, generate structured study notes, and draft blog posts — all in one place, without any cost or account sign-up.
     </p>
     <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      Unlike many study tools that lock core features behind a paywall or require lengthy registration, StudyAI is designed to be instantly usable. Open the site, type your question or topic, and get a clear, well-organized answer in seconds. The platform currently supports English and Hindi, with more languages being added as the tool grows, so learners who are more comfortable outside of English are not left behind.
-    </p>
-
-    <h3 style="margin-top: 18px;">How StudyAI Works</h3>
-    <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      StudyAI is organized into six simple tools. The <strong>AI Chat</strong> tab lets you ask any academic question — from algebra and organic chemistry to world history and grammar — and receive a direct, easy-to-follow explanation. The <strong>Notes Generator</strong> tab turns any topic or chapter name into a complete study guide: an introduction, key definitions, important points, real-world examples, exam tips, and ten practice multiple-choice questions with answers. The <strong>Blog Writer</strong> tab produces SEO-friendly, structured articles on any subject in a tone and length you choose. The <strong>Image</strong>, <strong>Video</strong>, and <strong>Music Generator</strong> tabs let you turn a text description into original AI-generated media for projects, presentations, or creative assignments.
-    </p>
-
-    <h3 style="margin-top: 18px;">Who Benefits From StudyAI</h3>
-    <p style="margin-bottom: 8px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      StudyAI is built for a wide range of learners, including students who:
-    </p>
-    <ul style="margin: 0 0 14px 20px; color: var(--text-main); font-size: 0.95rem; line-height: 1.8;">
-      <li>Are preparing for middle school, high school, or university-level exams</li>
-      <li>Need fast revision material for competitive or entrance exams</li>
-      <li>Prefer studying difficult subjects in a language other than English</li>
-      <li>Need well-structured notes for last-minute exam revision</li>
-      <li>Want to practice writing skills through AI-assisted blog drafting</li>
-      <li>Need quick visual, video, or audio content for school projects and presentations</li>
-    </ul>
-
-    <h3 style="margin-top: 18px;">Why Students Choose StudyAI</h3>
-    <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      Many study platforms require a paid subscription or account creation before you can use their core features. StudyAI is completely free to use, works instantly in your browser, and lets you download your generated notes as a PDF for offline studying. Because the tool supports multiple languages, students who struggle with English-only resources can learn in the language that suits them best.
+      The AI Chat now remembers your conversation, replies in the language you type in, and suggests smart follow-up questions — so you can go deeper on any topic without retyping context every time.
     </p>
 
     <h3 style="margin-top: 18px;">Frequently Asked Questions</h3>
@@ -373,33 +317,26 @@
     </p>
 
     <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
-      Can I save my notes as a PDF?
+      Does the AI Chat remember previous messages?
     </p>
     <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-      Yes. After generating notes in the Notes Generator tab, simply click the "PDF Download" button to save them to your device.
-    </p>
-
-    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
-      Which education levels is StudyAI suitable for?
-    </p>
-    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-      StudyAI works well for middle school, high school, college, and university students, as well as anyone preparing for a competitive or professional exam.
+      Yes. Within a session, StudyAI keeps track of your conversation so you can ask follow-up questions naturally. Click "New Chat" to start fresh.
     </p>
 
     <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
       What languages does StudyAI support?
     </p>
     <p style="margin-bottom: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-      You can generate notes and blogs in English, Hindi, or a mix of both (Hinglish) by selecting your preferred language in the Notes Generator or Blog Writer tab. More languages are being added over time.
+      The AI Chat automatically detects and replies in English, Hindi, or Hinglish based on how you type your question. Notes and Blog tools let you pick a language explicitly.
     </p>
   </section>
 
 </div><!-- /container -->
 
 <footer class="site-footer">
-  <p>Made with ❤️ &mdash; StudyAI v2.0</p>
+  <p>Made with ❤️ &mdash; StudyAI v2.1</p>
   <p style="margin-top:6px; font-size:0.75rem;">
-    Free AI Chat &bull; Notes Generator &bull; Blog Writer &bull; Image, Video & Music Generator
+    Free AI Chat &bull; Notes Generator &bull; Blog Writer
   </p>
   <p style="margin-top:8px; font-size:0.75rem;">
     <a href="/privacy-policy" style="color: var(--accent); text-decoration: none;">Privacy Policy</a>
@@ -423,7 +360,8 @@
 
   /* ---- State ---- */
   let notesContent = "";
-  let chatContent  = "";
+  let blogContent  = "";
+  let chatHistory  = [];   // [{role:'user'|'assistant', content:'...'}]
 
   /* ---- SSE Stream Reader ---- */
   async function readStream(response, onChunk, onDone, onError) {
@@ -479,18 +417,65 @@
     btn.disabled = loading;
   }
 
-  /* ---- ASK LEO ---- */
-  async function askLeo() {
-    const question  = document.getElementById("question").value.trim();
-    const answerBox = document.getElementById("answer");
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
 
-    if (!question) {
-      setOutputEmpty(answerBox, "⚠️ Please type a question first.");
-      return;
+  /* ---- CHAT BUBBLE RENDERING ---- */
+  function hideEmptyState() {
+    const empty = document.getElementById('chat-empty');
+    if (empty) empty.remove();
+  }
+
+  function addBubble(role, text) {
+    hideEmptyState();
+    const win = document.getElementById('chat-window');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + role;
+
+    if (role === 'user') {
+      bubble.textContent = text;
+    } else {
+      bubble.innerHTML = window.marked ? marked.parse(text) : escapeHtml(text);
     }
+    win.appendChild(bubble);
+    win.scrollTop = win.scrollHeight;
+    return bubble;
+  }
 
-    chatContent = "";
-    setOutputEmpty(answerBox, "");
+  function addCopyButton(bubble, getText) {
+    const btn = document.createElement('button');
+    btn.className = 'bubble-copy';
+    btn.innerHTML = '📋 Copy';
+    btn.onclick = () => {
+      navigator.clipboard.writeText(getText()).then(() => {
+        btn.innerHTML = '✅ Copied';
+        setTimeout(() => { btn.innerHTML = '📋 Copy'; }, 1500);
+      });
+    };
+    bubble.appendChild(btn);
+  }
+
+  /* ---- ASK LEO (multi-turn + streaming + markdown) ---- */
+  async function askLeo() {
+    const input = document.getElementById("question");
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    document.getElementById('followup-chips').innerHTML = '';
+
+    // 1. Render user bubble, push to history
+    addBubble('user', question);
+    chatHistory.push({ role: 'user', content: question });
+    input.value = '';
+
+    // 2. Create empty assistant bubble to stream into
+    const assistantBubble = addBubble('assistant', '');
+    let liveText = '';
+
     setLoading("btn-ask", true);
     setStatus("chat", true, "🤖 Getting your answer...");
 
@@ -498,12 +483,12 @@
       const res = await fetch("/ask-stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question, history: chatHistory })
       });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        setOutputEmpty(answerBox, "❌ Error: " + (err.error || "Unknown error"));
+        assistantBubble.textContent = "❌ Error: " + (err.error || "Unknown error");
         setStatus("chat", false);
         setLoading("btn-ask", false);
         return;
@@ -511,21 +496,66 @@
 
       await readStream(
         res,
-        chunk => { chatContent += chunk; appendOutput(answerBox, chunk); },
-        ()    => { setStatus("chat", false); setLoading("btn-ask", false); },
-        err   => { setOutputEmpty(answerBox, "❌ Error: " + err); setStatus("chat", false); setLoading("btn-ask", false); }
+        chunk => {
+          liveText += chunk;
+          assistantBubble.innerHTML = window.marked ? marked.parse(liveText) : escapeHtml(liveText);
+          const win = document.getElementById('chat-window');
+          win.scrollTop = win.scrollHeight;
+        },
+        () => {
+          setStatus("chat", false);
+          setLoading("btn-ask", false);
+          chatHistory.push({ role: 'assistant', content: liveText });
+          addCopyButton(assistantBubble, () => liveText);
+          fetchFollowups(question, liveText);
+        },
+        err => {
+          assistantBubble.textContent = "❌ Error: " + err;
+          setStatus("chat", false);
+          setLoading("btn-ask", false);
+        }
       );
 
     } catch (err) {
-      setOutputEmpty(answerBox, "❌ Error: " + err.message);
+      assistantBubble.textContent = "❌ Error: " + err.message;
       setStatus("chat", false);
       setLoading("btn-ask", false);
     }
   }
 
+  /* ---- FOLLOW-UP SUGGESTIONS ---- */
+  async function fetchFollowups(question, answer) {
+    const box = document.getElementById('followup-chips');
+    box.innerHTML = '';
+    try {
+      const res = await fetch("/suggest-followups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, answer })
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      (data.suggestions || []).forEach(s => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip';
+        chip.textContent = s;
+        chip.onclick = () => {
+          document.getElementById('question').value = s;
+          askLeo();
+        };
+        box.appendChild(chip);
+      });
+    } catch (_) {
+      // silently ignore — follow-ups are a nice-to-have, not critical
+    }
+  }
+
   function clearChat() {
-    chatContent = "";
-    setOutputEmpty(document.getElementById("answer"), "The answer will appear here...");
+    chatHistory = [];
+    document.getElementById('followup-chips').innerHTML = '';
+    const win = document.getElementById('chat-window');
+    win.innerHTML = '<div class="chat-empty" id="chat-empty">👋 Ask me anything — math, science, history, grammar, exam prep...<br />Type in <strong>English, Hindi, or Hinglish</strong> — I\'ll reply in the same language.</div>';
     document.getElementById("question").value = "";
   }
 
@@ -596,30 +626,26 @@
     document.getElementById("btn-pdf").disabled = true;
   }
 
-  /* ---- DOWNLOAD PDF ---- */
+  /* ---- DOWNLOAD PDF (notes) ---- */
   async function downloadPDF() {
     if (!notesContent.trim()) {
       alert("⚠️ Please generate notes first.");
       return;
     }
-
     const btn = document.getElementById("btn-pdf");
     btn.disabled = true;
     btn.textContent = "⏳ Downloading...";
-
     try {
       const res = await fetch("/download-notes-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: notesContent })
       });
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         alert("❌ PDF error: " + (err.error || "Unknown error"));
         return;
       }
-
       const blob = await res.blob();
       const url  = window.URL.createObjectURL(blob);
       const a    = document.createElement("a");
@@ -638,8 +664,6 @@
   }
 
   /* ---- GENERATE BLOG ---- */
-  let blogContent = "";
-
   async function generateBlog() {
     const topic    = document.getElementById("blog_topic").value.trim();
     const tone     = document.getElementById("blog_tone").value;
@@ -713,20 +737,17 @@
     const btn = document.getElementById("btn-blog-pdf");
     btn.disabled = true;
     btn.textContent = "⏳ Downloading...";
-
     try {
       const res = await fetch("/download-notes-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: blogContent })
       });
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         alert("❌ PDF error: " + (err.error || "Unknown error"));
         return;
       }
-
       const blob = await res.blob();
       const url  = window.URL.createObjectURL(blob);
       const a    = document.createElement("a");
@@ -742,208 +763,6 @@
       btn.disabled = false;
       btn.innerHTML = "<span>📄</span> PDF Download";
     }
-  }
-
-  /* ---- GENERATE IMAGE ---- */
-  let currentImageData = "";
-
-  async function generateImage() {
-    const prompt = document.getElementById("image_prompt").value.trim();
-    const imgBox = document.getElementById("image-output");
-
-    if (!prompt) {
-      setOutputEmpty(imgBox, "⚠️ Please enter a prompt first.");
-      return;
-    }
-
-    currentImageData = "";
-    setOutputEmpty(imgBox, "");
-    setLoading("btn-image", true);
-    setLoading("btn-image-download", true);
-    setStatus("image", true, "🎨 Generating your image... (may take 30-60 seconds)");
-
-    try {
-      const res = await fetch("/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setOutputEmpty(imgBox, "❌ Error: " + (data.error || "Unknown error"));
-        setStatus("image", false);
-        setLoading("btn-image", false);
-        return;
-      }
-
-      currentImageData = data.image;
-      imgBox.classList.remove("empty");
-      imgBox.innerHTML = `<img src="${currentImageData}" alt="${prompt}" />`;
-      document.getElementById("btn-image-download").disabled = false;
-
-    } catch (err) {
-      setOutputEmpty(imgBox, "❌ Error: " + err.message);
-    } finally {
-      setStatus("image", false);
-      setLoading("btn-image", false);
-    }
-  }
-
-  function downloadImage() {
-    if (!currentImageData) {
-      alert("⚠️ Please generate an image first.");
-      return;
-    }
-    const a = document.createElement("a");
-    a.href = currentImageData;
-    a.download = "ai_generated_image.png";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
-  function clearImage() {
-    currentImageData = "";
-    setOutputEmpty(document.getElementById("image-output"), "Your image will appear here...");
-    document.getElementById("image_prompt").value = "";
-    document.getElementById("btn-image-download").disabled = true;
-  }
-
-  /* ---- GENERATE VIDEO ---- */
-  let currentVideoData = "";
-
-  async function generateVideo() {
-    const prompt = document.getElementById("video_prompt").value.trim();
-    const vidBox = document.getElementById("video-output");
-
-    if (!prompt) {
-      setOutputEmpty(vidBox, "⚠️ Please enter a prompt first.");
-      return;
-    }
-
-    currentVideoData = "";
-    setOutputEmpty(vidBox, "");
-    setLoading("btn-video", true);
-    setLoading("btn-video-download", true);
-    setStatus("video", true, "🎬 Generating your video... (may take 1-3 minutes)");
-
-    try {
-      const res = await fetch("/generate-video", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setOutputEmpty(vidBox, "❌ Error: " + (data.error || "Unknown error"));
-        setStatus("video", false);
-        setLoading("btn-video", false);
-        return;
-      }
-
-      currentVideoData = data.video;
-      vidBox.classList.remove("empty");
-      vidBox.innerHTML = `<video src="${currentVideoData}" controls style="max-width:100%; border-radius:8px;"></video>`;
-      document.getElementById("btn-video-download").disabled = false;
-
-    } catch (err) {
-      setOutputEmpty(vidBox, "❌ Error: " + err.message);
-    } finally {
-      setStatus("video", false);
-      setLoading("btn-video", false);
-    }
-  }
-
-  function downloadVideo() {
-    if (!currentVideoData) {
-      alert("⚠️ Please generate a video first.");
-      return;
-    }
-    const a = document.createElement("a");
-    a.href = currentVideoData;
-    a.download = "ai_generated_video.mp4";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
-  function clearVideo() {
-    currentVideoData = "";
-    setOutputEmpty(document.getElementById("video-output"), "Your video will appear here...");
-    document.getElementById("video_prompt").value = "";
-    document.getElementById("btn-video-download").disabled = true;
-  }
-
-  /* ---- GENERATE MUSIC ---- */
-  let currentMusicData = "";
-
-  async function generateMusic() {
-    const prompt   = document.getElementById("music_prompt").value.trim();
-    const duration = parseInt(document.getElementById("music_duration").value) || 10;
-    const musicBox = document.getElementById("music-output");
-
-    if (!prompt) {
-      setOutputEmpty(musicBox, "⚠️ Please enter a prompt first.");
-      return;
-    }
-
-    currentMusicData = "";
-    setOutputEmpty(musicBox, "");
-    setLoading("btn-music", true);
-    setLoading("btn-music-download", true);
-    setStatus("music", true, "🎵 Generating your music... (may take 30-90 seconds)");
-
-    try {
-      const res = await fetch("/generate-music", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, duration })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setOutputEmpty(musicBox, "❌ Error: " + (data.error || "Unknown error"));
-        setStatus("music", false);
-        setLoading("btn-music", false);
-        return;
-      }
-
-      currentMusicData = data.music;
-      musicBox.classList.remove("empty");
-      musicBox.innerHTML = `<audio src="${currentMusicData}" controls style="width:100%;"></audio>`;
-      document.getElementById("btn-music-download").disabled = false;
-
-    } catch (err) {
-      setOutputEmpty(musicBox, "❌ Error: " + err.message);
-    } finally {
-      setStatus("music", false);
-      setLoading("btn-music", false);
-    }
-  }
-
-  function downloadMusic() {
-    if (!currentMusicData) {
-      alert("⚠️ Please generate music first.");
-      return;
-    }
-    const a = document.createElement("a");
-    a.href = currentMusicData;
-    a.download = "ai_generated_music.wav";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
-  function clearMusic() {
-    currentMusicData = "";
-    setOutputEmpty(document.getElementById("music-output"), "Your music will play here...");
-    document.getElementById("music_prompt").value = "";
-    document.getElementById("btn-music-download").disabled = true;
   }
 
   /* ---- Enter key shortcut for chat ---- */

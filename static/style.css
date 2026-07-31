@@ -284,7 +284,7 @@ button:disabled {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* === OUTPUT BOXES === */
+/* === OUTPUT BOXES (Notes / Blog) === */
 .output-box {
   margin-top: 14px;
   background: var(--bg-output);
@@ -312,7 +312,7 @@ button:disabled {
   font-style: italic;
 }
 
-/* === IMAGE OUTPUT (Image Generator tab) === */
+/* === IMAGE OUTPUT (legacy, kept in case re-added later) === */
 .image-output {
   display: flex;
   align-items: center;
@@ -320,7 +320,7 @@ button:disabled {
   min-height: 200px;
   padding: 10px;
 }
- 
+
 .image-output img {
   max-width: 100%;
   height: auto;
@@ -340,6 +340,152 @@ button:disabled {
   font-size: 0.8rem;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================
+   CHAT BUBBLE UI (AI Chat tab — multi-turn,
+   markdown rendering, follow-up chips)
+   ============================================ */
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 6px 2px;
+  margin-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-input) transparent;
+}
+
+.chat-window::-webkit-scrollbar { width: 5px; }
+.chat-window::-webkit-scrollbar-track { background: transparent; }
+.chat-window::-webkit-scrollbar-thumb { background: var(--bg-input); border-radius: 10px; }
+
+.chat-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 30px 14px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.bubble {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.93rem;
+  line-height: 1.7;
+  word-break: break-word;
+  position: relative;
+}
+
+.bubble.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #000;
+  border-bottom-right-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.bubble.assistant {
+  align-self: flex-start;
+  background: var(--bg-output);
+  color: var(--text-main);
+  border-bottom-left-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Markdown element styling inside assistant bubbles */
+.bubble.assistant p { margin-bottom: 8px; }
+.bubble.assistant p:last-child { margin-bottom: 0; }
+.bubble.assistant ul,
+.bubble.assistant ol { margin: 8px 0 8px 20px; }
+.bubble.assistant li { margin-bottom: 4px; }
+.bubble.assistant strong { color: var(--accent); }
+.bubble.assistant code {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'Courier New', monospace;
+}
+.bubble.assistant pre {
+  background: rgba(0,0,0,0.35);
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.bubble.assistant pre code {
+  background: none;
+  padding: 0;
+}
+.bubble.assistant table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.88rem;
+}
+.bubble.assistant th,
+.bubble.assistant td {
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.bubble-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.bubble-copy:hover { color: var(--accent); }
+
+/* Follow-up suggestion chips */
+.followup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  touch-action: manipulation;
+}
+.chip:hover {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+.chip:active { transform: scale(0.97); }
+
 /* ============================================
    RESPONSIVE BREAKPOINTS
    ============================================ */
@@ -351,6 +497,7 @@ button:disabled {
   .input-grid { grid-template-columns: 1fr; }
   button { padding: 11px 14px; font-size: 0.88rem; }
   .tab-btn { min-width: 100px; font-size: 0.82rem; }
+  .bubble { max-width: 92%; }
 }
 
 /* Tablet (≥600px) */
@@ -358,18 +505,6 @@ button:disabled {
   body { padding: 20px; }
   .card { padding: 26px; }
   .site-header { padding: 32px 20px 24px; }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* Desktop (≥900px) */
