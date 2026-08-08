@@ -14,7 +14,7 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 MODELS = [
     "meta-llama/llama-4-maverick",
     "deepseek/deepseek-v3.2-exp",
-    "deepseek/deepseek-r1-0528",
+    "google/gemma-4-31b-it:free",
 ]
 
 # ✅ In codes pe next model try hoga
@@ -31,9 +31,15 @@ def _build_messages(question=None, messages=None):
     if messages:
         return messages
 
+    # NOTE: this fallback path is only used when the caller doesn't already
+    # build its own `messages` list (app.py currently always does, so this
+    # is mainly a safety net). Written in English and explicitly NOT
+    # limited to Hindi, so it works equally well for a global audience.
     prompt = f"""
-Tum StudyAI ho. User ke personal private assistant ho.
-User ke sawal ka simple jawab do, usi language me jismein sawal poocha gaya hai.
+You are StudyAI, the user's personal AI study assistant.
+Give a clear, simple answer to the user's question, in the SAME language and script the user
+used to ask it — this could be English, Hindi, Spanish, French, Arabic, Portuguese, Chinese,
+German, Japanese, Russian, Bengali, or any other language.
 
 User question:
 {question}

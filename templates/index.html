@@ -7,26 +7,29 @@
 
   <!-- ===== PRIMARY SEO (Global Audience) ===== -->
   <title>StudyAI - Free AI Study Assistant | Chat, Notes, Blog & Image Generator</title>
-  <meta name="description" content="StudyAI is a free AI-powered study assistant for students worldwide. Ask questions, generate exam-ready notes, write blogs, and create AI images and videos — no login required. Available in English, Hindi, and more languages." />
+  <meta name="description" content="StudyAI is a free AI-powered study assistant for students worldwide. Ask questions, generate exam-ready notes, write blogs, and create AI images and videos — no login required. Works in any language you type in." />
   <meta name="keywords" content="AI study assistant, AI chatbot, free AI chat, AI notes generator, AI blog writer, AI image generator, AI video generator, study helper, student AI tool, homework helper, exam preparation AI" />
   <meta name="author" content="StudyAI" />
   <meta name="robots" content="index, follow" />
   <meta name="language" content="English" />
   <link rel="canonical" href="https://zivolf.com/" />
 
-  <!-- ===== HREFLANG (multi-language targeting) ===== -->
+  <!-- ===== HREFLANG (multi-language targeting) =====
+       Only one real page/content version is served today, so we only
+       declare "en" + "x-default" here. Add more hreflang entries once
+       dedicated per-language routes/content actually exist server-side —
+       pointing an hreflang tag at a URL that returns identical content is
+       misleading to search engines. -->
   <link rel="alternate" hreflang="en" href="https://zivolf.com/" />
-  <link rel="alternate" hreflang="hi" href="https://zivolf.com/?lang=hi" />
   <link rel="alternate" hreflang="x-default" href="https://zivolf.com/" />
 
   <!-- ===== OPEN GRAPH (social preview) ===== -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="StudyAI — Free AI Study Assistant for Students Worldwide" />
-  <meta property="og:description" content="Chat with AI, generate exam-ready notes, write blogs, and create AI images & videos — free, fast, and available in multiple languages." />
+  <meta property="og:description" content="Chat with AI, generate exam-ready notes, write blogs, and create AI images & videos — free, fast, and works in any language." />
   <meta property="og:url" content="https://zivolf.com/" />
   <meta property="og:image" content="https://zivolf.com/static/og-image.png" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:locale:alternate" content="hi_IN" />
   <meta property="og:site_name" content="StudyAI" />
 
   <!-- ===== TWITTER CARD ===== -->
@@ -56,7 +59,7 @@
     "applicationCategory": "EducationApplication",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "inLanguage": ["en", "hi"],
+    "inLanguage": ["en", "hi", "es", "fr", "pt", "ar", "de", "zh", "ja", "ru", "bn"],
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.5",
@@ -85,7 +88,7 @@
       <h1>StudyAI</h1>
     </div>
     <p class="tagline">Free AI Study Assistant for School, College &amp; University Students Worldwide</p>
-    <p class="sr-only">Free AI chatbot and notes generator for students everywhere. Generate exam-ready notes, blogs, images, and videos in seconds.</p>
+    <p class="sr-only">Free AI chatbot and notes generator for students everywhere. Generate exam-ready notes, blogs, images, and videos in seconds, in any language.</p>
   </header>
 
   <!-- TABS -->
@@ -114,7 +117,7 @@
       <div id="chat-window" class="chat-window" aria-live="polite" aria-label="Chat conversation">
         <div class="chat-empty" id="chat-empty">
           👋 Ask me anything — math, science, history, grammar, exam prep...<br />
-          Type in <strong>English, Hindi, or Hinglish</strong> — I'll reply in the same language.
+          Type in <strong>any language</strong> — I'll reply in the same language.
         </div>
       </div>
 
@@ -125,13 +128,18 @@
         <span id="chat-status-text">Thinking...</span>
       </div>
 
-      <div class="form-group" style="margin-top:10px;">
+<div class="form-group" style="margin-top:10px;">
         <label class="field-label sr-only" for="question">Type your question</label>
-        <textarea
-          id="question"
-          placeholder="Ask anything..."
-          aria-label="Question input"
-        ></textarea>
+        <div class="input-with-mic">
+          <textarea
+            id="question"
+            placeholder="Ask anything..."
+            aria-label="Question input"
+          ></textarea>
+          <button type="button" id="btn-mic" class="mic-btn" title="Voice input" aria-label="Voice input" onclick="toggleVoiceInput()">
+            🎤
+          </button>
+        </div>
       </div>
 
       <div class="btn-row">
@@ -168,11 +176,25 @@
         </div>
         <div class="form-group full-width">
           <label class="field-label" for="language">Language</label>
-          <select id="language" aria-label="Notes language">
+          <select id="language" aria-label="Notes language" onchange="toggleOtherLanguage('language','language_other_wrap')">
             <option value="English" selected>🇬🇧 English</option>
             <option value="Hindi">🇮🇳 Hindi</option>
             <option value="Hindi + English">🌐 Hindi + English (Hinglish)</option>
+            <option value="Spanish">🇪🇸 Spanish</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="Portuguese">🇵🇹 Portuguese</option>
+            <option value="Arabic">🇸🇦 Arabic</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Chinese (Simplified)">🇨🇳 Chinese (Simplified)</option>
+            <option value="Japanese">🇯🇵 Japanese</option>
+            <option value="Russian">🇷🇺 Russian</option>
+            <option value="Bengali">🇧🇩 Bengali</option>
+            <option value="Other">🌍 Other (type below)</option>
           </select>
+        </div>
+        <div class="form-group full-width" id="language_other_wrap" style="display:none;">
+          <label class="field-label" for="language_other">Type your language</label>
+          <input type="text" id="language_other" placeholder="e.g. Italian, Korean, Turkish..." />
         </div>
       </div>
 
@@ -250,11 +272,25 @@
         </div>
         <div class="form-group full-width">
           <label class="field-label" for="blog_language">Language</label>
-          <select id="blog_language">
+          <select id="blog_language" onchange="toggleOtherLanguage('blog_language','blog_language_other_wrap')">
             <option value="English" selected>🇬🇧 English</option>
             <option value="Hindi">🇮🇳 Hindi</option>
             <option value="Hindi + English">🌐 Hinglish</option>
+            <option value="Spanish">🇪🇸 Spanish</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="Portuguese">🇵🇹 Portuguese</option>
+            <option value="Arabic">🇸🇦 Arabic</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Chinese (Simplified)">🇨🇳 Chinese (Simplified)</option>
+            <option value="Japanese">🇯🇵 Japanese</option>
+            <option value="Russian">🇷🇺 Russian</option>
+            <option value="Bengali">🇧🇩 Bengali</option>
+            <option value="Other">🌍 Other (type below)</option>
           </select>
+        </div>
+        <div class="form-group full-width" id="blog_language_other_wrap" style="display:none;">
+          <label class="field-label" for="blog_language_other">Type your language</label>
+          <input type="text" id="blog_language_other" placeholder="e.g. Italian, Korean, Turkish..." />
         </div>
       </div>
 
@@ -327,14 +363,14 @@
       What languages does StudyAI support?
     </p>
     <p style="margin-bottom: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-      The AI Chat automatically detects and replies in English, Hindi, or Hinglish based on how you type your question. Notes and Blog tools let you pick a language explicitly.
+      The AI Chat automatically detects and replies in whichever language you type in — English, Hindi, Spanish, French, Arabic, or many others. Notes and Blog tools let you pick a language explicitly, including a free-text "Other" option for anything not in the list.
     </p>
   </section>
 
 </div><!-- /container -->
 
 <footer class="site-footer">
-  <p>Made with ❤️ &mdash; StudyAI v2.1</p>
+  <p>Made with ❤️ &mdash; StudyAI v2.2</p>
   <p style="margin-top:6px; font-size:0.75rem;">
     Free AI Chat &bull; Notes Generator &bull; Blog Writer
   </p>
@@ -362,6 +398,22 @@
   let notesContent = "";
   let blogContent  = "";
   let chatHistory  = [];   // [{role:'user'|'assistant', content:'...'}]
+
+  /* ---- Language select helpers (Notes / Blog "Other" option) ---- */
+  function toggleOtherLanguage(selectId, wrapId) {
+    const select = document.getElementById(selectId);
+    const wrap = document.getElementById(wrapId);
+    wrap.style.display = (select.value === 'Other') ? 'block' : 'none';
+  }
+
+  function resolveLanguage(selectId, otherId) {
+    const select = document.getElementById(selectId).value;
+    if (select === 'Other') {
+      const custom = document.getElementById(otherId).value.trim();
+      return custom || 'English';
+    }
+    return select;
+  }
 
   /* ---- SSE Stream Reader ---- */
   async function readStream(response, onChunk, onDone, onError) {
@@ -456,6 +508,72 @@
       });
     };
     bubble.appendChild(btn);
+  }
+
+  /* ---- VOICE INPUT (Web Speech API) ---- */
+  let recognition = null;
+  let isListening = false;
+
+  function initVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('btn-mic');
+
+    if (!SpeechRecognition) {
+      if (micBtn) micBtn.style.display = 'none';
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    // Use the browser/OS locale instead of a hardcoded region so voice
+    // input works well for users outside India too. Falls back to a
+    // generic English locale if the browser doesn't expose one.
+    recognition.lang = navigator.language || navigator.userLanguage || 'en-US';
+
+    const questionBox = document.getElementById('question');
+    let baseText = '';
+
+    recognition.onstart = () => {
+      isListening = true;
+      micBtn.classList.add('listening');
+      micBtn.textContent = '⏹️';
+      baseText = questionBox.value ? questionBox.value + ' ' : '';
+    };
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      questionBox.value = baseText + transcript;
+    };
+
+    recognition.onerror = (event) => {
+      console.log('Speech recognition error:', event.error);
+      stopListening();
+      if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+        alert('🎤 Please allow microphone access to use voice input.');
+      }
+    };
+
+    recognition.onend = () => stopListening();
+
+    function stopListening() {
+      isListening = false;
+      micBtn.classList.remove('listening');
+      micBtn.textContent = '🎤';
+    }
+  }
+
+  function toggleVoiceInput() {
+    if (!recognition) return;
+    if (isListening) {
+      recognition.stop();
+    } else {
+      try { recognition.start(); } catch (e) {}
+    }
   }
 
   /* ---- ASK LEO (multi-turn + streaming + markdown) ---- */
@@ -555,7 +673,7 @@
     chatHistory = [];
     document.getElementById('followup-chips').innerHTML = '';
     const win = document.getElementById('chat-window');
-    win.innerHTML = '<div class="chat-empty" id="chat-empty">👋 Ask me anything — math, science, history, grammar, exam prep...<br />Type in <strong>English, Hindi, or Hinglish</strong> — I\'ll reply in the same language.</div>';
+    win.innerHTML = '<div class="chat-empty" id="chat-empty">👋 Ask me anything — math, science, history, grammar, exam prep...<br />Type in <strong>any language</strong> — I\'ll reply in the same language.</div>';
     document.getElementById("question").value = "";
   }
 
@@ -564,7 +682,7 @@
     const topic      = document.getElementById("topic").value.trim();
     const subject    = document.getElementById("subject").value.trim();
     const class_name = document.getElementById("class_name").value.trim();
-    const language   = document.getElementById("language").value;
+    const language   = resolveLanguage("language", "language_other");
     const notesBox   = document.getElementById("notes");
 
     if (!topic) {
@@ -623,6 +741,9 @@
     document.getElementById("topic").value      = "";
     document.getElementById("subject").value    = "";
     document.getElementById("class_name").value = "";
+    document.getElementById("language").value   = "English";
+    document.getElementById("language_other").value = "";
+    document.getElementById("language_other_wrap").style.display = "none";
     document.getElementById("btn-pdf").disabled = true;
   }
 
@@ -669,7 +790,7 @@
     const tone     = document.getElementById("blog_tone").value;
     const length   = document.getElementById("blog_length").value;
     const keywords = document.getElementById("blog_keywords").value.trim();
-    const language = document.getElementById("blog_language").value;
+    const language = resolveLanguage("blog_language", "blog_language_other");
     const blogBox  = document.getElementById("blog");
 
     if (!topic) {
@@ -726,6 +847,9 @@
     setOutputEmpty(document.getElementById("blog"), "Your blog will appear here...");
     document.getElementById("blog_topic").value = "";
     document.getElementById("blog_keywords").value = "";
+    document.getElementById("blog_language").value = "English";
+    document.getElementById("blog_language_other").value = "";
+    document.getElementById("blog_language_other_wrap").style.display = "none";
     document.getElementById("btn-blog-pdf").disabled = true;
   }
 
@@ -766,7 +890,7 @@
   }
 
   /* ---- Enter key shortcut for chat ---- */
-  document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     const q = document.getElementById("question");
     if (q) {
       q.addEventListener("keydown", e => {
@@ -776,6 +900,7 @@
         }
       });
     }
+    initVoiceInput();
   });
 
   /* ---- Service Worker Register ---- */

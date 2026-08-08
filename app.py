@@ -15,14 +15,18 @@ app = Flask(__name__)
 
 # System instruction reused across chat turns — enables language auto-detect
 # and keeps Leo's persona consistent across multi-turn conversation.
-CHAT_SYSTEM_PROMPT = """Tum StudyAI ke andar "Leo" naam ka ek friendly AI study assistant ho, jo students ko
-duniya bhar me padhai me madad karta hai.
+# NOTE: written in English (rather than Hinglish) and explicitly NOT limited
+# to English/Hindi/Hinglish, so the model treats every language equally.
+CHAT_SYSTEM_PROMPT = """You are "Leo", a friendly AI study assistant inside StudyAI, helping students
+all over the world with their studies.
 
-Bahut zaroori rule: Jis language/script me student sawal poochta hai (English, Hindi, ya Hinglish),
-usi language me jawab do — bina poochhe khud detect karke. Agar user language switch kare beech
-conversation me, tum bhi switch kar do.
+Important rule: Always reply in the SAME language and script the student used to ask their
+question — this could be English, Hindi, Spanish, French, Arabic, Portuguese, Chinese, German,
+Japanese, Russian, Bengali, Hinglish, or any other language. Detect it automatically, without
+asking. If the user switches language mid-conversation, switch with them.
 
-Jawab clear, simple aur exam-oriented rakho. Zaroorat ho to bullet points, headings, ya examples use karo."""
+Keep answers clear, simple, and exam-oriented. Use bullet points, headings, or examples when
+they help understanding."""
 
 
 @app.route("/")
@@ -36,6 +40,11 @@ def privacy_policy():
 
 @app.route("/sitemap.xml")
 def sitemap():
+    # NOTE: we only serve one real version of the page (no separate /?lang=hi
+    # content actually exists server-side), so hreflang now only declares
+    # "en" + "x-default" instead of falsely implying a dedicated Hindi page.
+    # If/when true per-language routes are added, add matching hreflang
+    # entries here pointing at those real URLs.
     sitemap_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
@@ -43,8 +52,8 @@ def sitemap():
     <loc>https://zivolf.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="hi" href="https://zivolf.com/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://zivolf.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://zivolf.com/"/>
   </url>
 </urlset>"""
     return Response(sitemap_xml, mimetype="application/xml")
@@ -117,9 +126,9 @@ def suggest_followups():
     if not question or not answer:
         return jsonify({"suggestions": []})
 
-    prompt = f"""Neeche ek Q&A diya gaya hai. Ismein se exactly 3 chhote, natural follow-up
-questions suggest karo jo ek student agla pooch sakta hai — same language/script me jismein
-neeche ka question likha hai.
+    prompt = f"""Below is a Q&A pair. Suggest exactly 3 short, natural follow-up questions a
+student might ask next — write them in the SAME language/script as the question below
+(whatever language that is).
 
 Reply ONLY as a raw JSON array of exactly 3 short strings. No extra text, no markdown, no code fences.
 
@@ -159,20 +168,26 @@ def generate_notes_stream():
     topic = data.get("topic", "").strip()
     subject = data.get("subject", "").strip()
     class_name = data.get("class_name", "").strip()
-    language = data.get("language", "Hindi").strip()
+    # Global default is English rather than Hindi, since this app now
+    # targets students worldwide, not just Hindi-speaking students.
+    language = data.get("language", "English").strip()
 
     if not topic:
         return jsonify({"error": "Topic khaali hai."}), 400
 
     prompt = f"""
-Tum ek expert teacher ho.
+You are an expert teacher.
 
-Student ke exam ke liye best AI notes banao.
+Create the best possible exam-ready study notes for a student.
 
 Topic: {topic}
 Subject: {subject}
-Class: {class_name}
+Class/Level: {class_name}
 Language: {language}
+
+Write the ENTIRE output in the language specified above — this could be English, Hindi,
+Spanish, French, Arabic, Portuguese, Chinese, German, Japanese, Russian, Bengali, or any other
+language. Follow it exactly, including using that language's own script.
 
 Notes format:
 1. Short Introduction
@@ -184,7 +199,7 @@ Notes format:
 7. 10 MCQ Questions with Answers
 8. Short Summary
 
-Notes simple aur exam oriented hone chahiye.
+Keep the notes simple, clear, and exam-oriented.
 """
 
     def generate():
@@ -208,15 +223,16 @@ def generate_blog_stream():
     tone     = data.get("tone", "Professional").strip()
     length   = data.get("length", "Medium (600-800 words)").strip()
     keywords = data.get("keywords", "").strip()
-    language = data.get("language", "Hindi").strip()
+    # Global default is English rather than Hindi (see note above).
+    language = data.get("language", "English").strip()
 
     if not topic:
         return jsonify({"error": "Blog topic khaali hai."}), 400
 
     prompt = f"""
-Tum ek professional content writer aur SEO expert ho.
+You are a professional content writer and SEO expert.
 
-Ek blog post likho is topic par:
+Write a blog post on this topic:
 
 Topic: {topic}
 Tone: {tone}
@@ -224,15 +240,19 @@ Length: {length}
 Target keywords: {keywords if keywords else "N/A"}
 Language: {language}
 
+Write the ENTIRE blog in the language specified above — this could be English, Hindi, Spanish,
+French, Arabic, Portuguese, Chinese, German, Japanese, Russian, Bengali, or any other language.
+Follow it exactly, including using that language's own script.
+
 Blog format:
 1. Catchy SEO Title
 2. Short Introduction (hook)
-3. Main Body (headings/subheadings ke sath, well structured)
-4. Bullet points jaha zarurat ho
+3. Main Body (with headings/subheadings, well structured)
+4. Bullet points where useful
 5. Conclusion
 6. Call to Action
 
-Blog engaging, SEO-friendly aur original hona chahiye.
+The blog should be engaging, SEO-friendly, and original.
 """
 
     def generate():
@@ -249,6 +269,58 @@ Blog engaging, SEO-friendly aur original hona chahiye.
 # PDF DOWNLOAD
 # =========================
 
+# Unicode code-point ranges used to guess which script a piece of text is
+# written in, so we can pick a font file that actually has glyphs for it.
+# Add more (font_key, ttf_filename, range_check) entries here as you bundle
+# more Noto Sans variants into static/fonts/.
+_SCRIPT_FONT_RULES = [
+    ("Devanagari",     "NotoSansDevanagari-Regular.ttf", lambda c: "\u0900" <= c <= "\u097F"),
+    ("Bengali",        "NotoSansBengali-Regular.ttf",    lambda c: "\u0980" <= c <= "\u09FF"),
+    ("Arabic",         "NotoSansArabic-Regular.ttf",     lambda c: "\u0600" <= c <= "\u06FF"),
+    ("Hebrew",         "NotoSansHebrew-Regular.ttf",     lambda c: "\u0590" <= c <= "\u05FF"),
+    ("Cyrillic",       "NotoSans-Regular.ttf",           lambda c: "\u0400" <= c <= "\u04FF"),
+    ("CJK",            "NotoSansSC-Regular.ttf",         lambda c: "\u4E00" <= c <= "\u9FFF"),
+    ("Japanese-Kana",  "NotoSansSC-Regular.ttf",         lambda c: "\u3040" <= c <= "\u30FF"),
+    # Catch-all: any other non-ASCII character (accented Latin, Greek, etc.)
+    # falls back to the broad-coverage NotoSans-Regular file.
+    ("Latin-Extended",  "NotoSans-Regular.ttf",          lambda c: ord(c) > 127),
+]
+
+_registered_font_cache = {}
+
+
+def pick_pdf_font(text):
+    """Inspect `text` for non-ASCII scripts and return a registered
+    ReportLab font name that can render it. Falls back to the built-in
+    Helvetica font (Latin-only) if the text is plain ASCII, or if the
+    matching Noto Sans font file isn't bundled under static/fonts/."""
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    FONT_DIR = os.path.join(BASE_DIR, "static", "fonts")
+
+    sample = text[:3000]  # sampling is enough to detect the dominant script
+
+    for key, filename, matcher in _SCRIPT_FONT_RULES:
+        if not any(matcher(ch) for ch in sample):
+            continue
+
+        if key in _registered_font_cache:
+            return _registered_font_cache[key]
+
+        font_path = os.path.join(FONT_DIR, filename)
+        if not os.path.exists(font_path):
+            continue
+
+        font_name = f"Font_{key}"
+        try:
+            pdfmetrics.registerFont(TTFont(font_name, font_path))
+            _registered_font_cache[key] = font_name
+            return font_name
+        except Exception:
+            continue
+
+    return "Helvetica"
+
+
 @app.route("/download-notes-pdf", methods=["POST"])
 def download_notes_pdf():
     data = request.get_json(silent=True) or {}
@@ -260,20 +332,7 @@ def download_notes_pdf():
     # Unique filename per request so concurrent users never overwrite each other's PDF
     pdf_path = os.path.join(tempfile.gettempdir(), f"ai_notes_{uuid.uuid4().hex}.pdf")
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    font_paths = [
-        os.path.join(BASE_DIR, "static", "fonts", "NotoSansDevanagari-Regular.ttf"),
-    ]
-
-    font_name = "Helvetica"
-    for path in font_paths:
-        if os.path.exists(path):
-            try:
-                pdfmetrics.registerFont(TTFont("HindiFont", path))
-                font_name = "HindiFont"
-                break
-            except Exception:
-                continue
+    font_name = pick_pdf_font(notes)
 
     c = canvas.Canvas(pdf_path, pagesize=A4)
     width, height = A4

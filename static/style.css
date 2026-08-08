@@ -521,3 +521,50 @@ button:disabled {
 
   textarea { height: 130px; }
 }
+/* ============================================
+   VOICE INPUT (Mic Button)
+   ============================================ */
+
+.input-with-mic {
+  position: relative;
+}
+
+.mic-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 1.1rem;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+  z-index: 2;
+}
+
+.mic-btn:hover {
+  background: var(--accent);
+  color: #000;
+  opacity: 1;
+}
+
+.mic-btn:active { transform: scale(0.95); }
+
+.mic-btn.listening {
+  background: #ef4444;
+  color: #fff;
+  animation: pulse-mic 1.2s infinite;
+}
+
+@keyframes pulse-mic {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
