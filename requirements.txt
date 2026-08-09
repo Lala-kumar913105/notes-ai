@@ -6,3 +6,5 @@ pyinstaller
 python-dotenv
 reportlab
 gunicorn
+Flask-Login
+Flask-SQLAlchemy

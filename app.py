@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, jsonify, send_file, Response, stream_with_context
+from flask_login import LoginManager, login_required, current_user
 from ai_brain import ask_leo_stream
+from models import db, User
+from auth import auth_bp
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 import textwrap
@@ -12,6 +15,32 @@ import json
 
 
 app = Flask(__name__)
+
+# =========================
+# AUTH / DATABASE CONFIG
+# =========================
+
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-this-in-.env")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///studyai.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.login_view = "auth.login"  # not-logged-in users get redirected here
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+app.register_blueprint(auth_bp)
+
+with app.app_context():
+    db.create_all()  # creates studyai.db + users table on first run
+
 
 # System instruction reused across chat turns — enables language auto-detect
 # and keeps Leo's persona consistent across multi-turn conversation.
@@ -31,7 +60,11 @@ they help understanding."""
 
 @app.route("/")
 def home():
+    # current_user is available in templates automatically via Flask-Login,
+    # no need to pass it explicitly — {{ current_user.is_authenticated }}
+    # and {{ current_user.name }} just work inside index.html.
     return render_template("index.html")
+
 
 @app.route("/privacy-policy")
 def privacy_policy():
@@ -73,15 +106,20 @@ Disallow: /static/generated/
 Sitemap: https://zivolf.com/sitemap.xml"""
     return Response(robots_txt, mimetype="text/plain")
 
+
 @app.route("/ads.txt")
 def ads_txt():
     return app.send_static_file("ads.txt")
+
 
 # =========================
 # AI CHAT (STREAMING, MULTI-TURN)
 # =========================
 
 @app.route("/ask-stream", methods=["POST"])
+# @login_required   # <-- uncomment this if you want chat to require login.
+                     # Left open for now so guests can keep using chat
+                     # without an account, matching the current homepage copy.
 def ask_stream():
     data = request.get_json(silent=True) or {}
     question = data.get("question", "").strip()

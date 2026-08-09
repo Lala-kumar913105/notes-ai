@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log in — StudyAI</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container" style="max-width: 420px;">
+    <header class="site-header">
+      <div class="logo">
+        <span style="font-size:2rem;" aria-hidden="true">🤖</span>
+        <h1>StudyAI</h1>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2>Log in</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="status-bar visible" style="color:#f87171; border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.08);">
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST">
+        <div class="form-group">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" />
+        </div>
+        <div class="btn-row">
+          <button type="submit">Log in</button>
+        </div>
+      </form>
+
+      <p style="margin-top:16px; font-size:0.85rem; color: var(--text-muted);">
+        Don't have an account? <a href="/signup" style="color: var(--accent);">Sign up</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
