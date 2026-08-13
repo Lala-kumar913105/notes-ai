@@ -8,3 +8,6 @@ reportlab
 gunicorn
 Flask-Login
 Flask-SQLAlchemy
+pdfplumber
+python-docx
+pandas

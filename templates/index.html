@@ -125,7 +125,8 @@
       <div id="chat-window" class="chat-window" aria-live="polite" aria-label="Chat conversation">
         <div class="chat-empty" id="chat-empty">
           👋 Ask me anything — math, science, history, grammar, exam prep...<br />
-          Type in <strong>any language</strong> — I'll reply in the same language.
+          Type in <strong>any language</strong> — I'll reply in the same language.<br />
+          📎 Attach a file or image, or 🔎 turn on web search, for extra context.
         </div>
       </div>
 
@@ -136,7 +137,10 @@
         <span id="chat-status-text">Thinking...</span>
       </div>
 
-<div class="form-group" style="margin-top:10px;">
+      <!-- Pending attachment chips (files staged but not yet sent) -->
+      <div id="attachment-chips" class="attachment-chips"></div>
+
+      <div class="form-group" style="margin-top:10px;">
         <label class="field-label sr-only" for="question">Type your question</label>
         <div class="input-with-mic">
           <textarea
@@ -144,10 +148,25 @@
             placeholder="Ask anything..."
             aria-label="Question input"
           ></textarea>
+          <input type="file" id="file-input" hidden
+                 accept=".pdf,.docx,.txt,.csv,.png,.jpg,.jpeg,.py,.js,.java,.c,.cpp,.json,.md"
+                 onchange="handleFileUpload(event)" />
+          <button type="button" id="btn-attach" class="mic-btn" style="right:56px;"
+                  title="Attach a file or image" aria-label="Attach a file or image"
+                  onclick="document.getElementById('file-input').click()">
+            📎
+          </button>
           <button type="button" id="btn-mic" class="mic-btn" title="Voice input" aria-label="Voice input" onclick="toggleVoiceInput()">
             🎤
           </button>
         </div>
+      </div>
+
+      <div class="chat-toolbar">
+        <label class="web-search-toggle" for="web-search-toggle">
+          <input type="checkbox" id="web-search-toggle" />
+          <span>🔎 Search the web</span>
+        </label>
       </div>
 
       <div class="btn-row">
@@ -157,7 +176,12 @@
         <button class="secondary" onclick="clearChat()">
           🗑️ New Chat
         </button>
+        <button class="secondary" onclick="toggleHistoryPanel('chat')">
+          🕘 History
+        </button>
       </div>
+
+      <div id="history-panel-chat" class="history-panel"></div>
     </div>
   </section>
 
@@ -216,7 +240,12 @@
         <button class="secondary" onclick="clearNotes()">
           🗑️ Clear
         </button>
+        <button class="secondary" onclick="toggleHistoryPanel('notes')">
+          🕘 History
+        </button>
       </div>
+
+      <div id="history-panel-notes" class="history-panel"></div>
 
       <div class="status-bar" id="notes-status">
         <span class="spinner"></span>
@@ -312,7 +341,12 @@
         <button class="secondary" onclick="clearBlog()">
           🗑️ Clear
         </button>
+        <button class="secondary" onclick="toggleHistoryPanel('blog')">
+          🕘 History
+        </button>
       </div>
+
+      <div id="history-panel-blog" class="history-panel"></div>
 
       <div class="status-bar" id="blog-status">
         <span class="spinner"></span>
@@ -348,7 +382,7 @@
       StudyAI is a free, AI-powered study assistant built for students anywhere in the world. Whether you're in middle school, high school, college, or preparing for a professional or competitive exam, StudyAI helps you understand difficult topics, generate structured study notes, and draft blog posts — all in one place, without any cost or account sign-up.
     </p>
     <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      The AI Chat now remembers your conversation, replies in the language you type in, and suggests smart follow-up questions — so you can go deeper on any topic without retyping context every time.
+      The AI Chat now remembers your conversation, replies in the language you type in, lets you attach files or images and search the live web for up-to-date answers, and suggests smart follow-up questions — so you can go deeper on any topic without retyping context every time. Your chat, notes, and blog history is saved privately in your own browser, never on our servers, and older entries clear themselves automatically.
     </p>
 
     <h3 style="margin-top: 18px;">Frequently Asked Questions</h3>
@@ -361,10 +395,31 @@
     </p>
 
     <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Can I upload a file or image in the chat?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Yes. Tap the 📎 icon next to the chat box to attach a PDF, Word document, CSV, text/code file, or an image (up to 10MB). StudyAI reads the content and uses it to answer your question.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Can StudyAI search the web for current information?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Yes. Turn on the "🔎 Search the web" toggle above the Ask button, and StudyAI will look up fresh information online and cite its sources in the answer.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
       Does the AI Chat remember previous messages?
     </p>
     <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-      Yes. Within a session, StudyAI keeps track of your conversation so you can ask follow-up questions naturally. Click "New Chat" to start fresh.
+      Yes. Within a session, StudyAI keeps track of your conversation so you can ask follow-up questions naturally. Click "New Chat" to start fresh. Past conversations, notes, and blogs are also saved as History right in your browser for up to 30 days.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Where is my history stored?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Entirely on your own device, using your browser's local storage. It is never sent to or saved on our servers. History older than 30 days is removed automatically, and you can clear it anytime from the History panel.
     </p>
 
     <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
@@ -378,7 +433,7 @@
 </div><!-- /container -->
 
 <footer class="site-footer">
-  <p>Made with ❤️ &mdash; StudyAI v2.2</p>
+  <p>Made with ❤️ &mdash; StudyAI v2.3</p>
   <p style="margin-top:6px; font-size:0.75rem;">
     Free AI Chat &bull; Notes Generator &bull; Blog Writer
   </p>
@@ -406,6 +461,7 @@
   let notesContent = "";
   let blogContent  = "";
   let chatHistory  = [];   // [{role:'user'|'assistant', content:'...'}]
+  let pendingAttachments = []; // [{type:'text'|'image', filename, content|data_url}, ...] staged for next send
 
   /* ---- Language select helpers (Notes / Blog "Other" option) ---- */
   function toggleOtherLanguage(selectId, wrapId) {
@@ -423,8 +479,173 @@
     return select;
   }
 
+  /* ============================================
+     LOCALSTORAGE HISTORY MANAGER
+     - Per-section keys: studyai_history_chat / _notes / _blog
+     - Auto-purges entries older than HISTORY_MAX_AGE_DAYS
+     - Hard-caps item count per section (HISTORY_MAX_ITEMS)
+     - Fails safe on quota errors by trimming oldest entries
+     ============================================ */
+  const HISTORY_MAX_AGE_DAYS = 30;
+  const HISTORY_MAX_ITEMS    = 50;
+
+  function historyKey(section) {
+    return `studyai_history_${section}`;
+  }
+
+  function loadHistory(section) {
+    let items = [];
+    try {
+      const raw = localStorage.getItem(historyKey(section));
+      items = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(items)) items = [];
+    } catch (e) {
+      items = [];
+    }
+    const cutoff = Date.now() - HISTORY_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+    const fresh = items.filter(it => (it.ts || 0) >= cutoff);
+    if (fresh.length !== items.length) saveHistoryRaw(section, fresh); // purge stale entries
+    return fresh;
+  }
+
+  function saveHistoryRaw(section, items) {
+    try {
+      localStorage.setItem(historyKey(section), JSON.stringify(items));
+    } catch (e) {
+      // Storage full/unavailable — drop oldest half and retry once
+      if (items.length > 1) {
+        saveHistoryRaw(section, items.slice(Math.ceil(items.length / 2)));
+      }
+    }
+  }
+
+  function addHistoryItem(section, data) {
+    const items = loadHistory(section);
+    const entry = {
+      id: (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random()),
+      ts: Date.now(),
+      ...data
+    };
+    items.push(entry);
+    const trimmed = items.length > HISTORY_MAX_ITEMS
+      ? items.slice(items.length - HISTORY_MAX_ITEMS)
+      : items;
+    saveHistoryRaw(section, trimmed);
+    return entry;
+  }
+
+  function deleteHistoryItem(section, id) {
+    const items = loadHistory(section).filter(it => it.id !== id);
+    saveHistoryRaw(section, items);
+    return items;
+  }
+
+  function clearHistorySection(section) {
+    localStorage.removeItem(historyKey(section));
+  }
+
+  function formatHistoryDate(ts) {
+    const d = new Date(ts);
+    return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) +
+      ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /* ---- History panel UI (shared by Chat / Notes / Blog) ---- */
+  function toggleHistoryPanel(section) {
+    const panel = document.getElementById('history-panel-' + section);
+    if (panel.classList.contains('open')) {
+      panel.classList.remove('open');
+      panel.innerHTML = '';
+      return;
+    }
+    renderHistoryPanel(section);
+    panel.classList.add('open');
+  }
+
+  function renderHistoryPanel(section) {
+    const panel = document.getElementById('history-panel-' + section);
+    const items = loadHistory(section).slice().reverse(); // newest first
+
+    if (!items.length) {
+      panel.innerHTML = '<div class="history-empty">No history yet.</div>';
+      return;
+    }
+
+    const listHtml = items.map(it => {
+      const label = section === 'chat'
+        ? (it.title || 'Chat')
+        : (it.topic || 'Untitled');
+      return `
+        <div class="history-item" data-id="${it.id}">
+          <div class="history-item-main" onclick="restoreHistoryItem('${section}','${it.id}')">
+            <div class="history-item-title">${escapeHtml(label)}</div>
+            <div class="history-item-date">${formatHistoryDate(it.ts)}</div>
+          </div>
+          <button class="history-item-delete" onclick="removeHistoryItem('${section}','${it.id}')" aria-label="Delete">✕</button>
+        </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+      <div class="history-panel-header">
+        <span>${items.length} saved (auto-clears after ${HISTORY_MAX_AGE_DAYS} days)</span>
+        <button class="history-clear-all" onclick="clearAllHistory('${section}')">Clear all</button>
+      </div>
+      <div class="history-list">${listHtml}</div>
+    `;
+  }
+
+  function removeHistoryItem(section, id) {
+    deleteHistoryItem(section, id);
+    renderHistoryPanel(section);
+  }
+
+  function clearAllHistory(section) {
+    if (!confirm('Delete all saved history for this section?')) return;
+    clearHistorySection(section);
+    renderHistoryPanel(section);
+  }
+
+  function restoreHistoryItem(section, id) {
+    const items = loadHistory(section);
+    const item = items.find(it => it.id === id);
+    if (!item) return;
+
+    if (section === 'chat') {
+      chatHistory = item.messages || [];
+      currentChatSessionId = item.id;
+      document.getElementById('followup-chips').innerHTML = '';
+      const win = document.getElementById('chat-window');
+      win.innerHTML = '';
+      chatHistory.forEach(m => {
+        const b = addBubble(m.role, m.content);
+        if (m.role === 'assistant') addCopyButton(b, () => m.content);
+      });
+    } else if (section === 'notes') {
+      document.getElementById('topic').value = item.topic || '';
+      document.getElementById('subject').value = item.subject || '';
+      document.getElementById('class_name').value = item.class_name || '';
+      notesContent = item.content || '';
+      const box = document.getElementById('notes');
+      box.textContent = notesContent;
+      box.classList.toggle('empty', !notesContent.trim());
+      document.getElementById('btn-pdf').disabled = !notesContent.trim();
+    } else if (section === 'blog') {
+      document.getElementById('blog_topic').value = item.topic || '';
+      document.getElementById('blog_keywords').value = item.keywords || '';
+      blogContent = item.content || '';
+      const box = document.getElementById('blog');
+      box.textContent = blogContent;
+      box.classList.toggle('empty', !blogContent.trim());
+      document.getElementById('btn-blog-pdf').disabled = !blogContent.trim();
+    }
+
+    const panel = document.getElementById('history-panel-' + section);
+    panel.classList.remove('open');
+    panel.innerHTML = '';
+  }
+
   /* ---- SSE Stream Reader ---- */
-  async function readStream(response, onChunk, onDone, onError) {
+  async function readStream(response, onChunk, onDone, onError, onExtra) {
     const reader  = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -443,6 +664,7 @@
           if (parsed.error) { onError(parsed.error); return; }
           if (parsed.done)  { onDone();              return; }
           if (parsed.chunk) { onChunk(parsed.chunk); }
+          if (parsed.sources && onExtra) { onExtra(parsed); }
         } catch (_) {}
       }
     }
@@ -518,73 +740,92 @@
     bubble.appendChild(btn);
   }
 
-  /* ---- VOICE INPUT (Web Speech API) ---- */
-  let recognition = null;
-  let isListening = false;
+  function addSourcesToBubble(bubble, sources) {
+    if (!sources || !sources.length) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-sources';
+    wrap.innerHTML = '<div class="bubble-sources-label">🔎 Sources</div>' +
+      sources.map((s, i) =>
+        `<a class="bubble-source-link" href="${s.url}" target="_blank" rel="noopener noreferrer">
+           [${i + 1}] ${escapeHtml(s.title || s.url)}
+         </a>`
+      ).join('');
+    bubble.appendChild(wrap);
+  }
 
-  function initVoiceInput() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const micBtn = document.getElementById('btn-mic');
+  /* ---- FILE / IMAGE ATTACHMENTS ---- */
+  function renderAttachmentChips() {
+    const box = document.getElementById('attachment-chips');
+    box.innerHTML = '';
+    pendingAttachments.forEach((att, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'attachment-chip';
+      const icon = att.type === 'image' ? '🖼️' : '📎';
+      chip.innerHTML = `<span>${icon} ${escapeHtml(att.filename)}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'attachment-chip-remove';
+      removeBtn.setAttribute('aria-label', 'Remove attachment');
+      removeBtn.textContent = '✕';
+      removeBtn.onclick = () => {
+        pendingAttachments.splice(idx, 1);
+        renderAttachmentChips();
+      };
+      chip.appendChild(removeBtn);
+      box.appendChild(chip);
+    });
+  }
 
-    if (!SpeechRecognition) {
-      if (micBtn) micBtn.style.display = 'none';
+  async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    event.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('⚠️ File is larger than 10MB.');
       return;
     }
 
-    recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-    // Use the browser/OS locale instead of a hardcoded region so voice
-    // input works well for users outside India too. Falls back to a
-    // generic English locale if the browser doesn't expose one.
-    recognition.lang = navigator.language || navigator.userLanguage || 'en-US';
+    const fd = new FormData();
+    fd.append('file', file);
 
-    const questionBox = document.getElementById('question');
-    let baseText = '';
-
-    recognition.onstart = () => {
-      isListening = true;
-      micBtn.classList.add('listening');
-      micBtn.textContent = '⏹️';
-      baseText = questionBox.value ? questionBox.value + ' ' : '';
-    };
-
-    recognition.onresult = (event) => {
-      let transcript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
+    setStatus('chat', true, `📎 Reading ${file.name}...`);
+    try {
+      const res = await fetch('/upload-file', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert('❌ ' + (data.error || 'Could not read that file.'));
+        return;
       }
-      questionBox.value = baseText + transcript;
-    };
-
-    recognition.onerror = (event) => {
-      console.log('Speech recognition error:', event.error);
-      stopListening();
-      if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-        alert('🎤 Please allow microphone access to use voice input.');
-      }
-    };
-
-    recognition.onend = () => stopListening();
-
-    function stopListening() {
-      isListening = false;
-      micBtn.classList.remove('listening');
-      micBtn.textContent = '🎤';
+      pendingAttachments.push(data);
+      renderAttachmentChips();
+    } catch (err) {
+      alert('❌ Upload error: ' + err.message);
+    } finally {
+      setStatus('chat', false);
     }
   }
 
-  function toggleVoiceInput() {
-    if (!recognition) return;
-    if (isListening) {
-      recognition.stop();
-    } else {
-      try { recognition.start(); } catch (e) {}
+  /* ---- ASK LEO (multi-turn + streaming + markdown + attachments + web search) ---- */
+  let currentChatSessionId = null; // ties this browser tab's live chat to one history entry
+
+  function saveChatSession() {
+    if (!chatHistory.length) return;
+    const items = loadHistory('chat');
+    const title = (chatHistory.find(m => m.role === 'user')?.content || 'Chat').slice(0, 60);
+
+    if (currentChatSessionId) {
+      const idx = items.findIndex(it => it.id === currentChatSessionId);
+      if (idx !== -1) {
+        items[idx] = { ...items[idx], ts: Date.now(), title, messages: chatHistory };
+        saveHistoryRaw('chat', items);
+        return;
+      }
     }
+    const entry = addHistoryItem('chat', { title, messages: chatHistory });
+    currentChatSessionId = entry.id;
   }
 
-  /* ---- ASK LEO (multi-turn + streaming + markdown) ---- */
   async function askLeo() {
     const input = document.getElementById("question");
     const question = input.value.trim();
@@ -593,23 +834,37 @@
 
     document.getElementById('followup-chips').innerHTML = '';
 
-    // 1. Render user bubble, push to history
-    addBubble('user', question);
+    const attachmentsForThisTurn = pendingAttachments;
+    const webSearchOn = document.getElementById('web-search-toggle').checked;
+
+    // 1. Render user bubble (with a small attachment note if any), push to history
+    const userLabel = attachmentsForThisTurn.length
+      ? question + '\n\n📎 ' + attachmentsForThisTurn.map(a => a.filename).join(', ')
+      : question;
+    addBubble('user', userLabel);
     chatHistory.push({ role: 'user', content: question });
     input.value = '';
+    pendingAttachments = [];
+    renderAttachmentChips();
 
     // 2. Create empty assistant bubble to stream into
     const assistantBubble = addBubble('assistant', '');
     let liveText = '';
+    let liveSources = [];
 
     setLoading("btn-ask", true);
-    setStatus("chat", true, "🤖 Getting your answer...");
+    setStatus("chat", true, webSearchOn ? "🔎 Searching the web..." : "🤖 Getting your answer...");
 
     try {
       const res = await fetch("/ask-stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, history: chatHistory })
+        body: JSON.stringify({
+          question,
+          history: chatHistory,
+          attachments: attachmentsForThisTurn,
+          web_search: webSearchOn
+        })
       });
 
       if (!res.ok) {
@@ -624,6 +879,7 @@
         res,
         chunk => {
           liveText += chunk;
+          setStatus("chat", true, "🤖 Getting your answer...");
           assistantBubble.innerHTML = window.marked ? marked.parse(liveText) : escapeHtml(liveText);
           const win = document.getElementById('chat-window');
           win.scrollTop = win.scrollHeight;
@@ -632,13 +888,18 @@
           setStatus("chat", false);
           setLoading("btn-ask", false);
           chatHistory.push({ role: 'assistant', content: liveText });
+          addSourcesToBubble(assistantBubble, liveSources);
           addCopyButton(assistantBubble, () => liveText);
           fetchFollowups(question, liveText);
+          saveChatSession(); // persist this conversation to localStorage
         },
         err => {
           assistantBubble.textContent = "❌ Error: " + err;
           setStatus("chat", false);
           setLoading("btn-ask", false);
+        },
+        extra => {
+          if (extra.sources) liveSources = extra.sources;
         }
       );
 
@@ -679,9 +940,13 @@
 
   function clearChat() {
     chatHistory = [];
+    currentChatSessionId = null; // next message starts a fresh history entry
+    pendingAttachments = [];
+    renderAttachmentChips();
     document.getElementById('followup-chips').innerHTML = '';
+    document.getElementById('web-search-toggle').checked = false;
     const win = document.getElementById('chat-window');
-    win.innerHTML = '<div class="chat-empty" id="chat-empty">👋 Ask me anything — math, science, history, grammar, exam prep...<br />Type in <strong>any language</strong> — I\'ll reply in the same language.</div>';
+    win.innerHTML = '<div class="chat-empty" id="chat-empty">👋 Ask me anything — math, science, history, grammar, exam prep...<br />Type in <strong>any language</strong> — I\'ll reply in the same language.<br />📎 Attach a file or image, or 🔎 turn on web search, for extra context.</div>';
     document.getElementById("question").value = "";
   }
 
@@ -727,6 +992,7 @@
           setLoading("btn-notes", false);
           if (notesContent.trim()) {
             document.getElementById("btn-pdf").disabled = false;
+            addHistoryItem('notes', { topic, subject, class_name, language, content: notesContent });
           }
         },
         err => {
@@ -835,6 +1101,7 @@
           setLoading("btn-blog", false);
           if (blogContent.trim()) {
             document.getElementById("btn-blog-pdf").disabled = false;
+            addHistoryItem('blog', { topic, tone, length, keywords, language, content: blogContent });
           }
         },
         err => {
@@ -894,6 +1161,72 @@
     } finally {
       btn.disabled = false;
       btn.innerHTML = "<span>📄</span> PDF Download";
+    }
+  }
+
+  /* ---- VOICE INPUT (Web Speech API) ---- */
+  let recognition = null;
+  let isListening = false;
+
+  function initVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('btn-mic');
+
+    if (!SpeechRecognition) {
+      if (micBtn) micBtn.style.display = 'none';
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    // Use the browser/OS locale instead of a hardcoded region so voice
+    // input works well for users outside India too. Falls back to a
+    // generic English locale if the browser doesn't expose one.
+    recognition.lang = navigator.language || navigator.userLanguage || 'en-US';
+
+    const questionBox = document.getElementById('question');
+    let baseText = '';
+
+    recognition.onstart = () => {
+      isListening = true;
+      micBtn.classList.add('listening');
+      micBtn.textContent = '⏹️';
+      baseText = questionBox.value ? questionBox.value + ' ' : '';
+    };
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      questionBox.value = baseText + transcript;
+    };
+
+    recognition.onerror = (event) => {
+      console.log('Speech recognition error:', event.error);
+      stopListening();
+      if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+        alert('🎤 Please allow microphone access to use voice input.');
+      }
+    };
+
+    recognition.onend = () => stopListening();
+
+    function stopListening() {
+      isListening = false;
+      micBtn.classList.remove('listening');
+      micBtn.textContent = '🎤';
+    }
+  }
+
+  function toggleVoiceInput() {
+    if (!recognition) return;
+    if (isListening) {
+      recognition.stop();
+    } else {
+      try { recognition.start(); } catch (e) {}
     }
   }
 
