@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>{{ note.topic if note else 'Shared Note' }} - StudyAI</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <header class="site-header">
+    <div class="logo">
+      <span style="font-size:2rem;" aria-hidden="true">📄</span>
+      <h1>Shared Note</h1>
+    </div>
+    <p class="tagline">This is a shared note from StudyAI</p>
+    <p style="margin-top:10px; font-size:0.85rem;">
+      <a href="/" style="color: var(--accent);">← Back to StudyAI</a>
+    </p>
+  </header>
+
+  {% if note %}
+    <section class="card">
+      <div class="shared-note-header">
+        <h2 class="shared-note-topic">{{ note.topic }}</h2>
+        {% if note.subject or note.class_name %}
+          <div class="shared-note-meta">
+            {% if note.subject %}<span class="meta-tag">{{ note.subject }}</span>{% endif %}
+            {% if note.class_name %}<span class="meta-tag">{{ note.class_name }}</span>{% endif %}
+          </div>
+        {% endif %}
+        {% if note.language %}
+          <div class="shared-note-language">Language: {{ note.language }}</div>
+        {% endif %}
+      </div>
+
+      <div class="output-box shared-note-content" style="white-space: pre-wrap; word-wrap: break-word;">{{ note.content }}</div>
+
+      <p class="shared-note-footer">Shared via <a href="/" target="_blank" rel="noopener noreferrer">StudyAI</a> — Generate your own notes with AI</p>
+    </section>
+  {% else %}
+    <section class="card" style="text-align: center; padding: 40px 20px;">
+      <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+      <h2 style="margin-bottom: 12px;">This note is not available</h2>
+      <p style="color: var(--text-muted); line-height: 1.6;">
+        The note you're looking for either doesn't exist, was never shared publicly, or the owner has made it private again.
+        <br><br>
+        If you think this is a mistake, please contact the person who shared the link with you.
+      </p>
+      <a href="/" class="btn" style="margin-top: 20px; display: inline-block;">← Back to StudyAI</a>
+    </section>
+  {% endif %}
+
+</div><!-- /container -->
+
+<footer class="site-footer">
+  <p>Made with ❤️ &mdash; StudyAI</p>
+</footer>
+
+</body>
+</html>

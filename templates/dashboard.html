@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>My Dashboard - StudyAI</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <header class="site-header">
+    <div class="logo">
+      <span style="font-size:2rem;" aria-hidden="true">📊</span>
+      <h1>My Dashboard</h1>
+    </div>
+    <p class="tagline">Hi, {{ current_user.name }} — here's what you've saved on StudyAI</p>
+    <p style="margin-top:10px; font-size:0.85rem;">
+      <a href="/" style="color: var(--accent);">← Back to StudyAI</a> ·
+      <a href="/logout" style="color: var(--accent);">Log out</a>
+    </p>
+  </header>
+
+  <section class="card">
+    <h2><span class="icon">📚</span> Your Learning</h2>
+    <div class="dashboard-stats">
+      <div class="dashboard-stat">
+        <div class="dashboard-stat-num">{{ total_notes }}</div>
+        <div class="dashboard-stat-label">Notes Saved</div>
+      </div>
+      <div class="dashboard-stat">
+        <div class="dashboard-stat-num">{{ total_quizzes }}</div>
+        <div class="dashboard-stat-label">Quizzes Taken</div>
+      </div>
+      <div class="dashboard-stat">
+        <div class="dashboard-stat-num">{{ avg_score_pct ~ '%' if avg_score_pct is not none else '—' }}</div>
+        <div class="dashboard-stat-label">Average Quiz Score</div>
+      </div>
+      <div class="dashboard-stat">
+        <div class="dashboard-stat-num">{{ due_revisions|length }}</div>
+        <div class="dashboard-stat-label">Revision Due</div>
+      </div>
+      <div class="dashboard-stat">
+        <div class="dashboard-stat-num">🔥 {{ current_user.current_streak }}</div>
+        <div class="dashboard-stat-label">Day Streak</div>
+      </div>
+    </div>
+    <p style="margin-top: 14px; color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+      Notes are only tracked here after you tap "☁️ Save to My Account" — the private per-browser
+      History panel stays on your device and isn't counted. Quizzes are recorded automatically
+      whenever you finish one while logged in, straight from the Notes Generator.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2><span class="icon">📅</span> Revision Due</h2>
+
+    {% if due_revisions %}
+      <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+        Scored well on a quiz? The next review gets pushed further out. Struggled? It comes back sooner.
+      </p>
+      <div class="history-list">
+        {% for s in due_revisions %}
+          {% set days_overdue = (now - s.next_review_at).days %}
+          <div class="revision-item">
+            <div class="revision-item-main">
+              <div class="revision-item-title">{{ s.topic }}{% if s.subject %} · {{ s.subject }}{% endif %}</div>
+              <div class="revision-item-meta">
+                {% if s.last_score_pct is not none %}Last score: {{ s.last_score_pct }}% — {% endif %}
+                <span class="revision-overdue-tag">
+                  {% if days_overdue > 0 %}{{ days_overdue }} day{{ 's' if days_overdue != 1 else '' }} overdue
+                  {% else %}Due today{% endif %}
+                </span>
+              </div>
+            </div>
+            <div class="revision-item-actions">
+              <a href="/?tab=notes&topic={{ s.topic | urlencode }}&subject={{ (s.subject or '') | urlencode }}"
+                 class="btn secondary">▶️ Start Revision</a>
+              <form method="POST" action="{{ url_for('dashboard_mark_reviewed', schedule_id=s.id) }}" style="margin:0;">
+                <button type="submit" class="secondary">✅ Mark Reviewed</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="dashboard-section-empty-note">
+        Nothing due right now. Topics show up here after their spaced-revision interval passes —
+        take a quiz from the Notes Generator while logged in to start tracking a topic.
+      </div>
+    {% endif %}
+
+    {% if upcoming_revisions %}
+      <h3 style="margin-top: 18px;">Coming Up</h3>
+      <div class="history-list">
+        {% for s in upcoming_revisions %}
+          {% set days_left = (s.next_review_at - now).days %}
+          <div class="revision-item">
+            <div class="revision-item-main">
+              <div class="revision-item-title">{{ s.topic }}{% if s.subject %} · {{ s.subject }}{% endif %}</div>
+              <div class="revision-item-meta">
+                In {% if days_left > 0 %}{{ days_left }} day{{ 's' if days_left != 1 else '' }}{% else %}<1 day{% endif %}
+                {% if s.last_score_pct is not none %} — last score: {{ s.last_score_pct }}%{% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2><span class="icon">🎯</span> Weak Topics</h2>
+
+    {% if weak_topics %}
+      <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+        Topics with your lowest average quiz scores — worth another pass.
+      </p>
+      <div class="history-list">
+        {% for t in weak_topics %}
+          <div class="history-item">
+            <div class="history-item-main" style="cursor:default;">
+              <div class="history-item-title">{{ t.topic }}</div>
+              <div class="history-item-date">
+                {{ t.attempts }} attempt{{ 's' if t.attempts != 1 else '' }}
+              </div>
+            </div>
+            <span class="quiz-result-badge {{ 'low' if t.avg < 50 else ('mid' if t.avg < 75 else 'high') }}">
+              {{ t.avg }}%
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="dashboard-section-empty-note">
+        No quiz attempts yet. Generate notes on the home page, tap "🧠 Generate Quiz", and finish it while
+        logged in — your weakest topics will show up here.
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2><span class="icon">🧠</span> Recent Quiz Attempts</h2>
+
+    {% if recent_quizzes %}
+      <div class="history-list">
+        {% for r in recent_quizzes %}
+          <div class="history-item">
+            <div class="history-item-main" style="cursor:default;">
+              <div class="history-item-title">{{ r.topic }}{% if r.subject %} · {{ r.subject }}{% endif %}</div>
+              <div class="history-item-date">
+                {{ r.score }}/{{ r.total }} —
+                {{ r.created_at.strftime('%d %b %Y, %H:%M') if r.created_at else '' }}
+              </div>
+            </div>
+            <span class="quiz-result-badge {{ 'low' if r.percent < 50 else ('mid' if r.percent < 75 else 'high') }}">
+              {{ r.percent }}%
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="dashboard-section-empty-note">
+        No quiz attempts yet.
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2><span class="icon">🕘</span> Recent Notes</h2>
+
+    <!-- Search box for saved notes -->
+    <div class="notes-search" style="margin-bottom: 16px;">
+      <label for="notes-search-input" class="visually-hidden">Search your saved notes</label>
+      <div class="search-input-wrapper">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          type="search"
+          id="notes-search-input"
+          class="notes-search-input"
+          placeholder="Search your saved notes by keyword…"
+          autocomplete="off"
+          aria-describedby="notes-search-hint"
+        />
+        <span id="notes-search-hint" class="visually-hidden">Type to search across note topics, subjects, and content. Results appear below.</span>
+      </div>
+      <div id="notes-search-results" class="notes-search-results" aria-live="polite"></div>
+    </div>
+
+    {% if recent_notes %}
+      <div class="history-list">
+        {% for n in recent_notes %}
+          <div class="history-item">
+            <div class="history-item-main">
+              <div class="history-item-title">{{ n.topic }}</div>
+              <div class="history-item-date">
+                {%- if n.subject %}{{ n.subject }}{% endif -%}
+                {%- if n.subject and n.class_name %} · {% endif -%}
+                {%- if n.class_name %}{{ n.class_name }}{% endif -%}
+                {%- if n.subject or n.class_name %} — {% endif -%}
+                {{ n.created_at.strftime('%d %b %Y, %H:%M') if n.created_at else '' }}
+              </div>
+            </div>
+            <div class="history-item-actions">
+              <form method="POST" action="{{ url_for('dashboard_toggle_share', note_id=n.id) }}" style="margin:0;"
+                    onsubmit="return confirm('{{ 'Make this note private? The share link will stop working.' if n.is_public else 'Make this note public? Anyone with the link can view it.' }}');">
+                <button type="submit" class="history-item-share-toggle" aria-label="{{ 'Make private' if n.is_public else 'Make public' }}">
+                  {{ "🔒 Make Private" if n.is_public else "🔓 Make Public" }}
+                </button>
+              </form>
+              {% if n.is_public and n.share_token %}
+                <div class="history-item-share-link" title="Copy share link">
+                  <input type="text" value="{{ request.url_root.rstrip('/') }}{{ url_for('view_shared_note', share_token=n.share_token) }}" readonly aria-label="Share link" />
+                  <button type="button" class="copy-btn" onclick="copyShareLink(this)" aria-label="Copy link">📋</button>
+                </div>
+              {% endif %}
+              <form method="POST" action="{{ url_for('dashboard_delete_note', note_id=n.id) }}" style="margin:0;"
+                    onsubmit="return confirm('Delete this saved note? This cannot be undone.');">
+                <button type="submit" class="history-item-delete" aria-label="Delete note">✕</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="history-empty">
+        No saved notes yet. Generate some notes on the home page and tap "☁️ Save to My Account" to see them here.
+      </div>
+    {% endif %}
+  </section>
+
+</div><!-- /container -->
+
+<footer class="site-footer">
+  <p>Made with ❤️ &mdash; StudyAI</p>
+</footer>
+
+<script>
+// Notes search functionality with debouncing
+(function() {
+  const searchInput = document.getElementById('notes-search-input');
+  const resultsContainer = document.getElementById('notes-search-results');
+  let debounceTimer = null;
+  let lastQuery = '';
+  let currentAbortController = null;
+
+  if (!searchInput || !resultsContainer) return;
+
+  function debounceSearch(query) {
+    clearTimeout(debounceTimer);
+    
+    // Cancel any in-flight request
+    if (currentAbortController) {
+      currentAbortController.abort();
+    }
+
+    debounceTimer = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  }
+
+  async function performSearch(query) {
+    if (!query.trim()) {
+      resultsContainer.innerHTML = '';
+      resultsContainer.style.display = 'none';
+      return;
+    }
+
+    // Show loading state
+    resultsContainer.innerHTML = '<div class="search-loading" style="padding: 12px; color: var(--text-muted); font-size: 0.85rem;">Searching…</div>';
+    resultsContainer.style.display = 'block';
+
+    currentAbortController = new AbortController();
+
+    try {
+      const response = await fetch(`/api/notes/search?q=${encodeURIComponent(query)}`, {
+        signal: currentAbortController.signal,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      renderResults(data.results || [], query);
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        return; // Ignore aborted requests
+      }
+      console.error('Notes search error:', err);
+      resultsContainer.innerHTML = '<div class="search-error" style="padding: 12px; color: var(--danger); font-size: 0.85rem;">Search failed. Please try again.</div>';
+    }
+  }
+
+  function renderResults(results, query) {
+    if (!results.length) {
+      resultsContainer.innerHTML = '<div class="search-empty" style="padding: 12px; color: var(--text-muted); font-size: 0.85rem;">No matching notes found.</div>';
+      resultsContainer.style.display = 'block';
+      return;
+    }
+
+    const html = results.map(note => {
+      // Format date for display
+      let dateStr = '';
+      if (note.created_at) {
+        const dt = new Date(note.created_at);
+        dateStr = dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      }
+
+      // Build meta line with subject if present
+      const metaParts = [];
+      if (note.subject) metaParts.push(note.subject);
+      if (dateStr) metaParts.push(dateStr);
+      const metaLine = metaParts.join(' — ');
+
+      // Escape HTML for safe rendering
+      const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      };
+
+      const topicEscaped = escapeHtml(note.topic);
+      const subjectEscaped = escapeHtml(note.subject || '');
+      const snippetEscaped = escapeHtml(note.snippet || '');
+      const metaEscaped = escapeHtml(metaLine);
+
+      // Highlight query in snippet (simple case-insensitive highlight)
+      const highlightedSnippet = highlightQuery(snippetEscaped, query);
+
+      return `
+        <div class="history-item search-result-item" data-note-id="${note.id}">
+          <details class="search-result-details">
+            <summary class="history-item-main">
+              <div class="history-item-title">${topicEscaped}</div>
+              <div class="history-item-date">${metaEscaped}</div>
+            </summary>
+            <div class="search-result-content">
+              <div class="search-result-snippet">${highlightedSnippet}</div>
+            </div>
+          </details>
+        </div>
+      `;
+    }).join('');
+
+    resultsContainer.innerHTML = html;
+    resultsContainer.style.display = 'block';
+  }
+
+  function highlightQuery(text, query) {
+    if (!query.trim()) return text;
+    const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+    return text.replace(regex, '<mark style="background: var(--accent); color: var(--bg); padding: 0 2px; border-radius: 2px;">$1</mark>');
+  }
+
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // Event listener for search input
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    lastQuery = query;
+    debounceSearch(query);
+  });
+
+  // Clear results when input is cleared
+  searchInput.addEventListener('search', (e) => {
+    if (!e.target.value.trim()) {
+      resultsContainer.innerHTML = '';
+      resultsContainer.style.display = 'none';
+    }
+  });
+
+  // Handle Escape key to clear search
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      searchInput.blur();
+      resultsContainer.innerHTML = '';
+      resultsContainer.style.display = 'none';
+    }
+  });
+
+  // Copy share link to clipboard
+  function copyShareLink(btn) {
+    const input = btn.previousElementSibling;
+    if (input && input.type === 'text') {
+      input.select();
+      input.setSelectionRange(0, 99999); // for mobile
+      navigator.clipboard.writeText(input.value).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = '✓';
+        btn.setAttribute('aria-label', 'Copied');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.setAttribute('aria-label', 'Copy link');
+        }, 1500);
+      }).catch(() => {
+        // Fallback for older browsers
+        document.execCommand('copy');
+        const originalText = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = originalText; }, 1500);
+      });
+    }
+  }
+})();
+</script>
+
+</body>
+</html>

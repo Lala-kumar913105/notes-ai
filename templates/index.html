@@ -7,8 +7,8 @@
 
   <!-- ===== PRIMARY SEO (Global Audience) ===== -->
   <title>StudyAI - Free AI Study Assistant | Chat, Notes, Blog & Image Generator</title>
-  <meta name="description" content="StudyAI is a free AI-powered study assistant for students worldwide. Ask questions, generate exam-ready notes, write blogs, and create AI images and videos — no login required. Works in any language you type in." />
-  <meta name="keywords" content="AI study assistant, AI chatbot, free AI chat, AI notes generator, AI blog writer, AI image generator, AI video generator, study helper, student AI tool, homework helper, exam preparation AI" />
+  <meta name="description" content="StudyAI is a free AI-powered study assistant for students worldwide. Ask questions, generate exam-ready notes, quizzes and flashcards, write blogs, and create AI images and videos — no login required. Works in any language you type in." />
+  <meta name="keywords" content="AI study assistant, AI chatbot, free AI chat, AI notes generator, AI quiz generator, AI flashcards, AI blog writer, AI image generator, AI video generator, study helper, student AI tool, homework helper, exam preparation AI" />
   <meta name="author" content="StudyAI" />
   <meta name="robots" content="index, follow" />
   <meta name="language" content="English" />
@@ -26,7 +26,7 @@
   <!-- ===== OPEN GRAPH (social preview) ===== -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="StudyAI — Free AI Study Assistant for Students Worldwide" />
-  <meta property="og:description" content="Chat with AI, generate exam-ready notes, write blogs, and create AI images & videos — free, fast, and works in any language." />
+  <meta property="og:description" content="Chat with AI, generate exam-ready notes, quizzes and flashcards, write blogs, and create AI images & videos — free, fast, and works in any language." />
   <meta property="og:url" content="https://zivolf.com/" />
   <meta property="og:image" content="https://zivolf.com/static/og-image.png" />
   <meta property="og:locale" content="en_US" />
@@ -35,7 +35,7 @@
   <!-- ===== TWITTER CARD ===== -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="StudyAI — Free AI Study Assistant for Students Worldwide" />
-  <meta name="twitter:description" content="Free AI chat, notes generator, blog writer, and image/video creator for students everywhere." />
+  <meta name="twitter:description" content="Free AI chat, notes generator, quizzes, flashcards, blog writer, and image/video creator for students everywhere." />
   <meta name="twitter:image" content="https://zivolf.com/static/og-image.png" />
 
   <!-- ===== THEME / PWA ===== -->
@@ -55,7 +55,7 @@
     "@type": "WebApplication",
     "name": "StudyAI",
     "url": "https://zivolf.com/",
-    "description": "Free AI chat, notes generator, blog writer, and image/video generator for students worldwide.",
+    "description": "Free AI chat, notes generator, quizzes, flashcards, blog writer, and image generator for students worldwide.",
     "applicationCategory": "EducationApplication",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -81,6 +81,24 @@
 
 <div class="container">
 
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" style="max-width:900px; margin:0 auto 16px;">
+        {% for category, message in messages %}
+          {% if category == 'success' %}
+            <div class="status-bar visible" style="color:#22c55e; border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">
+              <span>{{ message }}</span>
+            </div>
+          {% else %}
+            <div class="status-bar visible" style="color:#f87171; border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.08);">
+              <span>{{ message }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <!-- HEADER -->
   <header class="site-header">
     <div class="logo">
@@ -88,16 +106,48 @@
       <h1>StudyAI</h1>
     </div>
     <p class="tagline">Free AI Study Assistant for School, College &amp; University Students Worldwide</p>
-    <p class="sr-only">Free AI chatbot and notes generator for students everywhere. Generate exam-ready notes, blogs, images, and videos in seconds, in any language.</p>
+    <p class="sr-only">Free AI chatbot, notes generator, quiz and flashcard maker for students everywhere. Generate exam-ready notes, quizzes, flashcards, blogs, images, and videos in seconds, in any language.</p>
     <p style="margin-top:10px; font-size:0.85rem;">
     {% if current_user.is_authenticated %}
-      Hi, {{ current_user.name }} — <a href="/logout" style="color: var(--accent);">Log out</a>
+      Hi, {{ current_user.name }} — <a href="/dashboard" style="color: var(--accent);">📊 Dashboard</a> ·
+      <a href="/api/export-data" style="color: var(--accent);">⬇️ Export My Data</a> ·
+      <button type="button" class="account-delete-btn" style="background:none;border:none;color:var(--accent);cursor:pointer;font:inherit;padding:0;" onclick="openDeleteAccountModal()">🗑️ Delete My Account</button> ·
+      <a href="/logout" style="color: var(--accent);">Log out</a>
     {% else %}
       <a href="/login" style="color: var(--accent);">Log in</a> ·
       <a href="/signup" style="color: var(--accent);">Sign up</a>
     {% endif %}
     </p>
   </header>
+
+<!-- Delete Account Confirmation Modal -->
+<div id="delete-account-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+  <div class="modal-box">
+    <h2 id="delete-modal-title">🗑️ Delete My Account</h2>
+    <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+      This will <strong>permanently delete</strong> your account and <strong>all your data</strong>:
+    </p>
+    <ul style="color: var(--text-muted); line-height: 1.8; margin-bottom: 16px; padding-left: 20px;">
+      <li>All saved notes (☁️ Save to My Account)</li>
+      <li>All quiz results and quiz history</li>
+      <li>All revision schedules</li>
+      <li>Your profile information</li>
+    </ul>
+    <p style="color: var(--danger); font-weight: 600; margin-bottom: 16px;">
+      This action cannot be undone.
+    </p>
+    <form id="delete-account-form" onsubmit="confirmDeleteAccount(event)">
+      <div class="form-group">
+        <label class="field-label" for="delete-password">Type your password to confirm</label>
+        <input type="password" id="delete-password" name="password" required autocomplete="current-password" placeholder="Your password" />
+      </div>
+      <div class="btn-row" style="justify-content: flex-end; gap: 8px; margin-top: 8px;">
+        <button type="button" class="btn-secondary" onclick="closeDeleteAccountModal()">Cancel</button>
+        <button type="submit" class="btn-danger">Delete Account Permanently</button>
+      </div>
+    </form>
+  </div>
+</div>
 
   <!-- TABS -->
   <nav class="tabs" role="tablist" aria-label="Sections">
@@ -156,7 +206,7 @@
                   onclick="document.getElementById('file-input').click()">
             📎
           </button>
-          <button type="button" id="btn-mic" class="mic-btn" title="Voice input" aria-label="Voice input" onclick="toggleVoiceInput()">
+          <button type="button" id="btn-mic" class="mic-btn" title="Voice input" aria-label="Voice input" onclick="toggleVoiceInput('btn-mic')">
             🎤
           </button>
         </div>
@@ -193,8 +243,80 @@
       <h2><span class="icon">📝</span> AI Notes Generator</h2>
 
       <div class="form-group">
-        <label class="field-label" for="topic">Topic / Chapter Name *</label>
-        <input type="text" id="topic" placeholder="e.g. Photosynthesis, World War II" aria-required="true" />
+        <span class="field-label" style="display:block; margin-bottom:6px;">Notes Mode</span>
+        <div class="tabs notes-mode-tabs" role="radiogroup" aria-label="Notes generation mode"
+             style="margin-bottom:0; background:var(--bg-input);">
+          <button type="button" class="tab-btn active" id="mode-btn-student" data-mode="student"
+                  role="radio" aria-checked="true" onclick="setNotesMode('student')">🎓 Student</button>
+          <button type="button" class="tab-btn" id="mode-btn-teacher" data-mode="teacher"
+                  role="radio" aria-checked="false" onclick="setNotesMode('teacher')">👨‍🏫 Teacher</button>
+          <button type="button" class="tab-btn" id="mode-btn-professional" data-mode="professional"
+                  role="radio" aria-checked="false" onclick="setNotesMode('professional')">💼 Professional</button>
+        </div>
+        <div id="notes-mode-hint" style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">
+          Exam-ready study notes — pick a Note Style below
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="topic">Topic / Chapter Name (optional if you attach a file)</label>
+        <div class="input-with-mic">
+          <input type="text" id="topic" placeholder="e.g. Photosynthesis, World War II" />
+          <button type="button" id="btn-mic-topic" class="mic-btn" title="Voice input"
+                  aria-label="Voice input for topic" onclick="toggleVoiceInput('btn-mic-topic')">
+            🎤
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">Or generate notes from a file</label>
+        <input type="file" id="notes-file-input" hidden multiple
+               accept=".pdf,.docx,.txt,.csv,.png,.jpg,.jpeg,.py,.js,.java,.c,.cpp,.json,.md"
+               onchange="handleNotesFileUpload(event)" />
+        <button type="button" class="secondary" onclick="document.getElementById('notes-file-input').click()">
+          📎 Attach Files (PDF / Word / Image — multiple)
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="notes-youtube-url">Or paste a YouTube video link</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="notes-youtube-url" style="flex:1; min-width:200px;"
+                 placeholder="https://www.youtube.com/watch?v=..." />
+          <button type="button" class="secondary" onclick="handleYoutubeFetch()">
+            🎥 Fetch Transcript
+          </button>
+        </div>
+        <div id="notes-attachment-chips" class="attachment-chips"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="notes-article-url">🌐 Or paste a web article link</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="notes-article-url" style="flex:1; min-width:200px;"
+                 placeholder="https://example.com/article..." />
+          <button type="button" class="secondary" onclick="handleArticleFetch()">
+            🌐 Fetch Article
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">Or paste text directly</label>
+        <button type="button" class="secondary" id="btn-paste-text" onclick="togglePasteTextPanel()">
+          📋 Paste Text
+        </button>
+        <div id="paste-text-panel" style="display:none; margin-top:8px;">
+          <textarea id="notes-pasted-text"
+                    placeholder="Paste source text here — e.g. a passage copied from a book, an article, or your own notes (at least ~30 characters)..."></textarea>
+          <div class="btn-row" style="margin-top:8px;">
+            <button type="button" class="secondary" onclick="usePastedText()">
+              ✅ Use This Text
+            </button>
+          </div>
+          <div id="paste-text-status" style="color: var(--text-muted); font-size:0.8rem; margin-top:6px;"></div>
+        </div>
       </div>
 
       <div class="input-grid">
@@ -203,10 +325,47 @@
           <input type="text" id="subject" placeholder="e.g. Science, History" />
         </div>
         <div class="form-group">
-          <label class="field-label" for="class_name">Grade / Level</label>
-          <input type="text" id="class_name" placeholder="e.g. Grade 10, University" />
+          <label class="field-label" for="education_level">Education Level</label>
+          <select id="education_level" aria-label="Education level" onchange="toggleOtherEducationLevel()">
+            <option value="" selected>Select education level (optional)</option>
+            <option value="School">School</option>
+            <option value="High School">High School</option>
+            <option value="College">College</option>
+            <option value="University">University</option>
+            <option value="Undergraduate">Undergraduate</option>
+            <option value="Postgraduate">Postgraduate</option>
+            <option value="PhD / Research">PhD / Research</option>
+            <option value="Professional">Professional</option>
+            <option value="General Learning">General Learning</option>
+            <option value="Other">Other (type below)</option>
+          </select>
         </div>
-        <div class="form-group full-width">
+        <div class="form-group full-width" id="education_level_other_wrap" style="display:none;">
+          <label class="field-label" for="education_level_other">Type your education level</label>
+          <input type="text" id="education_level_other" placeholder="e.g. Grade 10, Class 5, Year 2..." />
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="curriculum">Curriculum (optional)</label>
+          <select id="curriculum" aria-label="Curriculum" onchange="toggleOtherCurriculum()">
+            <option value="" selected>None / Not applicable</option>
+            <option value="CBSE">CBSE</option>
+            <option value="ICSE">ICSE</option>
+            <option value="GCSE">GCSE</option>
+            <option value="A-Level">A-Level</option>
+            <option value="IB">IB</option>
+            <option value="AP">AP</option>
+            <option value="SAT">SAT</option>
+            <option value="JEE">JEE</option>
+            <option value="NEET">NEET</option>
+            <option value="University">University</option>
+            <option value="Other">Other (type below)</option>
+          </select>
+        </div>
+        <div class="form-group full-width" id="curriculum_other_wrap" style="display:none;">
+          <label class="field-label" for="curriculum_other">Type your curriculum</label>
+          <input type="text" id="curriculum_other" placeholder="e.g. State board, K-12, matric..." />
+        </div>
+        <div class="form-group">
           <label class="field-label" for="language">Language</label>
           <select id="language" aria-label="Notes language" onchange="toggleOtherLanguage('language','language_other_wrap')">
             <option value="English" selected>🇬🇧 English</option>
@@ -224,6 +383,17 @@
             <option value="Other">🌍 Other (type below)</option>
           </select>
         </div>
+        <div class="form-group" id="note_style_wrap">
+          <label class="field-label" for="note_style">Note Style</label>
+          <select id="note_style" aria-label="Notes style">
+            <option value="detailed" selected>📚 Detailed Notes</option>
+            <option value="quick">⚡ Quick Notes</option>
+            <option value="exam">📝 Exam Notes</option>
+            <option value="revision">🔄 Revision Notes</option>
+            <option value="beginner">🚀 Beginner Notes</option>
+            <option value="professional">🎯 Professional Notes</option>
+          </select>
+        </div>
         <div class="form-group full-width" id="language_other_wrap" style="display:none;">
           <label class="field-label" for="language_other">Type your language</label>
           <input type="text" id="language_other" placeholder="e.g. Italian, Korean, Turkish..." />
@@ -234,9 +404,29 @@
         <button id="btn-notes" onclick="generateNotes()">
           <span>✨</span> Generate Notes
         </button>
+        <button class="secondary" id="btn-study-kit" onclick="generateStudyKit()">
+          <span>⚡</span> Generate Study Kit
+        </button>
         <button class="secondary" id="btn-pdf" onclick="downloadPDF()" disabled>
           <span>📄</span> PDF Download
         </button>
+        <button class="secondary" id="btn-docx" onclick="downloadNotesDocx()" disabled>
+          ⬇️ Word (.docx)
+        </button>
+        <button class="secondary" id="btn-txt" onclick="downloadNotesTxt()" disabled>
+          ⬇️ Text (.txt)
+        </button>
+        <button class="secondary" id="btn-md" onclick="downloadNotesMarkdown()" disabled>
+          ⬇️ Markdown (.md)
+        </button>
+        <button class="secondary" id="btn-copy-notes" onclick="copyNotes()" disabled>
+          📋 Copy
+        </button>
+        {% if current_user.is_authenticated %}
+        <button class="secondary" id="btn-save-account" onclick="saveNoteToAccount()" disabled>
+          <span>☁️</span> Save to My Account
+        </button>
+        {% endif %}
         <button class="secondary" onclick="clearNotes()">
           🗑️ Clear
         </button>
@@ -252,9 +442,166 @@
         <span id="notes-status-text">Notes are being generated...</span>
       </div>
 
-      <h3>Generated Notes</h3>
+      <h3 id="notes-heading">Generated Notes</h3>
       <div id="notes" class="output-box empty" aria-live="polite" aria-label="Generated Notes">
         Notes will appear here...
+      </div>
+
+      <!-- STUDY TOOLS — reorganized into a secondary sub-tab row so the Notes
+           tab doesn't stack every tool vertically. Notes form + output box stay
+           above (always visible); only these tools are tucked behind tabs. All
+           existing ids and action buttons are preserved exactly. -->
+      <div class="notes-subtabs" role="tablist" aria-label="Study tools">
+        <button type="button" class="notes-subtab-btn" id="notes-subtab-tutor" data-panel="tutor" role="tab" aria-selected="false" onclick="openNotesSubTab('tutor')">🤖 AI Tutor</button>
+        <button type="button" class="notes-subtab-btn" id="notes-subtab-quiz" data-panel="quiz" role="tab" aria-selected="false" onclick="openNotesSubTab('quiz')">🧠 Quiz</button>
+        <button type="button" class="notes-subtab-btn" id="notes-subtab-flashcards" data-panel="flashcards" role="tab" aria-selected="false" onclick="openNotesSubTab('flashcards')">🎴 Flashcards</button>
+        <button type="button" class="notes-subtab-btn" id="notes-subtab-mindmap" data-panel="mindmap" role="tab" aria-selected="false" onclick="openNotesSubTab('mindmap')">🗺️ Mind Map</button>
+        <button type="button" class="notes-subtab-btn" id="notes-subtab-pdf" data-panel="pdf" role="tab" aria-selected="false" onclick="openNotesSubTab('pdf')">📑 PDF Workspace</button>
+      </div>
+
+      <!-- AI Tutor -->
+      <div class="notes-subpanel" id="notes-panel-tutor" style="display:none;">
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="secondary" id="btn-tutor" onclick="toggleTutorPanel()" disabled>
+            <span>🤖</span> Ask AI About These Notes
+          </button>
+        </div>
+
+        <div id="tutor-panel" class="tutor-panel" style="display:none;">
+        <div class="tutor-chips">
+          <button type="button" class="chip" onclick="askTutor('Explain this in simpler language')">Explain simply</button>
+          <button type="button" class="chip" onclick="askTutor('Give me a real-world example')">Give an example</button>
+          <button type="button" class="chip" onclick="askTutor('Explain this like a teacher would in class')">Explain like a teacher</button>
+          <button type="button" class="chip" onclick="askTutor('What is the real-world application of this topic?')">Real-world use</button>
+        </div>
+
+        <div id="tutor-window" class="tutor-window" aria-live="polite" aria-label="AI Tutor conversation"></div>
+
+        <div class="status-bar" id="tutor-status">
+          <span class="spinner"></span>
+          <span id="tutor-status-text">🤖 Thinking...</span>
+        </div>
+
+        <div class="form-group" style="margin-top:4px;">
+          <label class="field-label sr-only" for="tutor-question">Ask a question about these notes</label>
+          <textarea id="tutor-question" placeholder="Ask anything about these notes..." style="height:70px;"></textarea>
+        </div>
+        <div class="btn-row">
+          <button onclick="askTutor()">
+            <span>🚀</span> Ask
+          </button>
+          <button class="secondary" onclick="clearTutorChat()">
+            🗑️ Clear chat
+          </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- Quiz + Flashcards — generated from whatever is currently in the Notes box above -->
+      <div class="notes-subpanel" id="notes-panel-quiz" style="display:none;">
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="secondary" id="btn-quiz" onclick="generateQuiz()" disabled>
+            <span>🧠</span> Generate Quiz
+          </button>
+        </div>
+
+      <div class="status-bar" id="quiz-status">
+        <span class="spinner"></span>
+        <span id="quiz-status-text">🧠 Building your quiz...</span>
+      </div>
+      <div id="quiz-box" class="quiz-box" style="display:none;"></div>
+      </div>
+
+      <!-- Flashcards -->
+      <div class="notes-subpanel" id="notes-panel-flashcards" style="display:none;">
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="secondary" id="btn-flashcards" onclick="generateFlashcards()" disabled>
+            <span>🎴</span> Generate Flashcards
+          </button>
+        </div>
+
+      <div class="status-bar" id="flashcards-status">
+        <span class="spinner"></span>
+        <span id="flashcards-status-text">🎴 Building your flashcards...</span>
+      </div>
+      <div id="flashcards-box" class="flashcards-box" style="display:none;"></div>
+      </div>
+
+      <!-- Mind Map — generated from whatever is currently in the Notes box above -->
+      <div class="notes-subpanel" id="notes-panel-mindmap" style="display:none;">
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="secondary" id="btn-mindmap" onclick="generateMindMap()" disabled>
+            <span>🗺️</span> Generate Mind Map
+          </button>
+        </div>
+
+      <div class="status-bar" id="mindmap-status">
+        <span class="spinner"></span>
+        <span id="mindmap-status-text">🗺️ Building your mind map...</span>
+      </div>
+      <div id="mindmap-box" class="mindmap-box" style="display:none;"></div>
+      </div>
+
+      <!-- PDF Workspace — upload PDF(s) to Summarize / Ask / Explain / Translate / Compare -->
+      <div class="notes-subpanel" id="notes-panel-pdf" style="display:none;">
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="secondary" id="btn-pdf-workspace" onclick="togglePdfWorkspacePanel()">
+            <span>📑</span> PDF Workspace
+          </button>
+        </div>
+
+      <div id="pdf-workspace-panel" class="tutor-panel" style="display:none;">
+        <p style="margin:0 0 10px; font-size:0.85rem; color: var(--text-muted); line-height:1.6;">
+          Upload one PDF (or a second one to compare) for <strong>Summarize</strong>, <strong>Ask</strong>,
+          <strong>Explain</strong>, <strong>Translate</strong>, or <strong>Compare</strong> — a distinct
+          workflow from generating study notes from a file.
+        </p>
+
+        <div class="form-group" style="margin-bottom:8px;">
+          <input type="file" id="pdf-workspace-file-1" hidden accept=".pdf"
+                 onchange="handlePdfWorkspaceUpload(event)" />
+          <input type="file" id="pdf-workspace-file-2" hidden accept=".pdf"
+                 onchange="handlePdfWorkspaceUpload(event)" />
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="secondary" onclick="document.getElementById('pdf-workspace-file-1').click()">
+              📄 Upload PDF 1
+            </button>
+            <button type="button" class="secondary" id="btn-pdf-workspace-file-2"
+                    onclick="document.getElementById('pdf-workspace-file-2').click()" style="display:none;">
+              📄 Upload PDF 2 (Compare)
+            </button>
+          </div>
+          <div id="pdf-workspace-chips" class="attachment-chips"></div>
+        </div>
+
+        <div class="form-group" id="pdf-workspace-question-group" style="display:none;">
+          <label class="field-label" for="pdf-workspace-question">Your question</label>
+          <textarea id="pdf-workspace-question" placeholder="e.g. What is the main argument of this document?"
+                    style="height:70px;"></textarea>
+        </div>
+
+        <div class="form-group" id="pdf-workspace-language-group" style="display:none;">
+          <label class="field-label" for="pdf-workspace-target-language">Translate to</label>
+          <input type="text" id="pdf-workspace-target-language" placeholder="e.g. Hindi, Spanish, French..." value="English" />
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="secondary" onclick="runPdfWorkspace('summarize')">📝 Summarize</button>
+          <button type="button" class="secondary" onclick="runPdfWorkspace('ask')">❓ Ask</button>
+          <button type="button" class="secondary" onclick="runPdfWorkspace('explain')">💡 Explain</button>
+          <button type="button" class="secondary" onclick="runPdfWorkspace('translate')">🌐 Translate</button>
+          <button type="button" class="secondary" id="btn-pdf-workspace-compare"
+                  onclick="runPdfWorkspace('compare')" style="display:none;">⚖️ Compare</button>
+        </div>
+
+        <div class="status-bar" id="pdf-workspace-status">
+          <span class="spinner"></span>
+          <span id="pdf-workspace-status-text">📑 Working...</span>
+        </div>
+
+        <div id="pdf-workspace-output" class="output-box empty" aria-live="polite"
+             aria-label="PDF Workspace output">Result will appear here...</div>
+        </div>
       </div>
 
       <details style="margin-top:16px;">
@@ -379,10 +726,10 @@
     <h2><span class="icon">📚</span> What Is StudyAI?</h2>
 
     <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      StudyAI is a free, AI-powered study assistant built for students anywhere in the world. Whether you're in middle school, high school, college, or preparing for a professional or competitive exam, StudyAI helps you understand difficult topics, generate structured study notes, and draft blog posts — all in one place, without any cost or account sign-up.
+      StudyAI is a free, AI-powered study assistant built for students anywhere in the world. Whether you're in middle school, high school, college, or preparing for a professional or competitive exam, StudyAI helps you understand difficult topics, generate structured study notes, quiz yourself, revise with flashcards, and draft blog posts — all in one place, without any cost or account sign-up.
     </p>
     <p style="margin-bottom: 14px; color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-      The AI Chat now remembers your conversation, replies in the language you type in, lets you attach files or images and search the live web for up-to-date answers, and suggests smart follow-up questions — so you can go deeper on any topic without retyping context every time. Your chat, notes, and blog history is saved privately in your own browser, never on our servers, and older entries clear themselves automatically.
+      The AI Chat now remembers your conversation, replies in the language you type in, lets you attach files or images and search the live web for up-to-date answers, and suggests smart follow-up questions — so you can go deeper on any topic without retyping context every time. The Notes Generator can build notes directly from an uploaded PDF, Word document, or photo of a textbook page, and once notes exist you can turn them into an interactive quiz or a set of flip flashcards with one click. Your chat, notes, and blog history is saved privately in your own browser, never on our servers, and older entries clear themselves automatically.
     </p>
 
     <h3 style="margin-top: 18px;">Frequently Asked Questions</h3>
@@ -399,6 +746,34 @@
     </p>
     <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
       Yes. Tap the 📎 icon next to the chat box to attach a PDF, Word document, CSV, text/code file, or an image (up to 10MB). StudyAI reads the content and uses it to answer your question.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Can I generate notes from a PDF, Word file, or photo instead of typing a topic?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Yes. In the Notes Generator, tap "📎 Attach PDF / Word / Image" to upload a source document or a photo of a textbook page (up to 10MB). StudyAI will build exam-ready notes from that material — you can still add a topic, subject, or grade level alongside it for extra guidance, but it's optional once a file is attached.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Can I generate notes from a YouTube video?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Yes. Paste a YouTube video link into the "Or paste a YouTube video link" field in the Notes Generator and tap "🎥 Fetch Transcript". StudyAI pulls the video's caption transcript and builds notes from it — this only works for videos that have captions/subtitles available.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Can I generate notes from a web article?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Yes. Paste a link to any blog post, news article, or Wikipedia page into the "🌐 Or paste a web article link" field and tap "🌐 Fetch Article". StudyAI pulls the page's main text and uses it as the source for your notes — always check the site's terms before reusing its content.
+    </p>
+
+    <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
+      Can I turn my notes into a quiz or flashcards?
+    </p>
+    <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+      Yes. Once you've generated notes, two buttons appear underneath: "🧠 Generate Quiz" builds an interactive multiple-choice quiz with instant feedback and a final score, and "🎴 Generate Flashcards" builds a set of flip cards you can mark as known or not-yet-known while you revise. Both are built directly from your generated notes, in the same language.
     </p>
 
     <p style="margin-bottom: 4px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;">
@@ -426,16 +801,16 @@
       What languages does StudyAI support?
     </p>
     <p style="margin-bottom: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-      The AI Chat automatically detects and replies in whichever language you type in — English, Hindi, Spanish, French, Arabic, or many others. Notes and Blog tools let you pick a language explicitly, including a free-text "Other" option for anything not in the list.
+      The AI Chat automatically detects and replies in whichever language you type in — English, Hindi, Spanish, French, Arabic, or many others. Notes and Blog tools let you pick a language explicitly, including a free-text "Other" option for anything not in the list. Generated quizzes and flashcards follow the same language you picked for your notes.
     </p>
   </section>
 
 </div><!-- /container -->
 
 <footer class="site-footer">
-  <p>Made with ❤️ &mdash; StudyAI v2.3</p>
+  <p>Made with ❤️ &mdash; StudyAI v2.6</p>
   <p style="margin-top:6px; font-size:0.75rem;">
-    Free AI Chat &bull; Notes Generator &bull; Blog Writer
+    Free AI Chat &bull; Notes Generator &bull; Quiz &amp; Flashcards &bull; Blog Writer
   </p>
   <p style="margin-top:8px; font-size:0.75rem;">
     <a href="/privacy-policy" style="color: var(--accent); text-decoration: none;">Privacy Policy</a>
@@ -447,7 +822,9 @@
   /* ---- Tab Switching ---- */
   function switchTab(name, btn) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => {
+    // Scope to the top-level tab bar only: the Notes mode buttons reuse the
+    // .tab-btn class, and must NOT be deactivated when switching sections.
+    document.querySelectorAll('nav.tabs > .tab-btn').forEach(b => {
       b.classList.remove('active');
       b.setAttribute('aria-selected', 'false');
     });
@@ -458,25 +835,147 @@
   }
 
   /* ---- State ---- */
+  const isLoggedIn = {{ 'true' if current_user.is_authenticated else 'false' }};
+
   let notesContent = "";
+  let notesTopicLabel = ""; // topic (or attachment/video filename) behind the current notesContent — used when auto-saving quiz results
   let blogContent  = "";
   let chatHistory  = [];   // [{role:'user'|'assistant', content:'...'}]
-  let pendingAttachments = []; // [{type:'text'|'image', filename, content|data_url}, ...] staged for next send
+  let pendingAttachments = []; // [{type:'text'|'image', filename, content|data_url}, ...] staged for next chat send
+  let pendingNotesAttachments = []; // [{type:'text'|'image', source?, filename, content|data_url}, ...] staged for next notes generation
 
-  /* ---- Language select helpers (Notes / Blog "Other" option) ---- */
-  function toggleOtherLanguage(selectId, wrapId) {
+  // Maximum number of combined notes sources (files, images, YouTube
+  // transcripts, pasted text, web articles) allowed in one generation.
+  const MAX_NOTES_ATTACHMENTS = 5;
+
+  // Valid "Note Style" values for the Notes Generator (#note_style).
+  // Kept in sync with the backend's NOTE_STYLES keys; used to restore
+  // history entries safely (older entries predate this field).
+  const NOTE_STYLE_VALUES = ["detailed", "quick", "exam", "revision", "beginner", "professional"];
+
+  // Quiz state (built from the current notesContent)
+  let quizData = [];       // [{type:'mcq'|'true_false'|'fill_blank', question, options:[...], answer:0, answer_text?, explanation}, ...]
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+  let quizResultSaved = false; // guards against saving the same finished quiz twice
+
+  // Flashcards state (built from the current notesContent)
+  let flashcardsData = []; // [{front, back}, ...]
+  let flashcardIndex = 0;
+  let flashcardKnown = 0;
+  let flashcardFlipped = false;
+
+  /* ---- Select "Other" reveal + resolve helpers (Language / Education Level /
+     Curriculum — each select gets its own hidden "type below" input, so all
+     three can be open at the same time without interfering with each other). ---- */
+  function toggleOtherField(selectId, wrapId) {
     const select = document.getElementById(selectId);
     const wrap = document.getElementById(wrapId);
+    if (!select || !wrap) return;
     wrap.style.display = (select.value === 'Other') ? 'block' : 'none';
   }
 
-  function resolveLanguage(selectId, otherId) {
+  function resolveOtherField(selectId, otherId, fallback) {
     const select = document.getElementById(selectId).value;
     if (select === 'Other') {
       const custom = document.getElementById(otherId).value.trim();
-      return custom || 'English';
+      return custom || fallback;
     }
     return select;
+  }
+
+  /* ---- Language (existing Notes / Blog helpers — behavior unchanged) ---- */
+  function toggleOtherLanguage(selectId, wrapId) {
+    toggleOtherField(selectId, wrapId);
+  }
+
+  function resolveLanguage(selectId, otherId) {
+    return resolveOtherField(selectId, otherId, 'English');
+  }
+
+  // Known option values for the Notes Generator's Education Level + Curriculum
+  // selects, used when restoring history. Old history entries store a plain
+  // free-text string in class_name — when it doesn't match a known <option>,
+  // we fall back to "Other" and place the raw value in its text input.
+  const EDUCATION_LEVEL_VALUES = ["", "School", "High School", "College", "University",
+    "Undergraduate", "Postgraduate", "PhD / Research", "Professional", "General Learning"];
+  const CURRICULUM_VALUES = ["", "CBSE", "ICSE", "GCSE", "A-Level", "IB", "AP",
+    "SAT", "JEE", "NEET", "University"];
+
+  /* ---- Education Level ---- */
+  function toggleOtherEducationLevel() {
+    toggleOtherField("education_level", "education_level_other_wrap");
+  }
+
+  function resolveEducationLevel() {
+    return resolveOtherField("education_level", "education_level_other", "");
+  }
+
+  /* ---- Curriculum ---- */
+  function toggleOtherCurriculum() {
+    toggleOtherField("curriculum", "curriculum_other_wrap");
+  }
+
+  function resolveCurriculum() {
+    return resolveOtherField("curriculum", "curriculum_other", "");
+  }
+
+  /* ---- Combined "class_name" string for the backend (e.g. "University — JEE").
+     Keeps /generate-notes-stream's route signature and the Note model untouched. ---- */
+  function resolveClassLevel() {
+    return [resolveEducationLevel(), resolveCurriculum()].filter(Boolean).join(" — ");
+  }
+
+  /* ---- Restore the Education Level + Curriculum selects from a stored
+     "class_name" string. New history entries store the combined
+     "Level — Curriculum" format; OLD entries store a raw free-text value like
+     "Grade 10" — those can't match a known <option>, so they fall back to
+     selecting "Other" and putting the raw value in its text input. ---- */
+  function restoreClassLevelUI(stored) {
+    const levelSel   = document.getElementById("education_level");
+    const levelOther = document.getElementById("education_level_other");
+    const levelWrap  = document.getElementById("education_level_other_wrap");
+    const currSel    = document.getElementById("curriculum");
+    const currOther  = document.getElementById("curriculum_other");
+    const currWrap   = document.getElementById("curriculum_other_wrap");
+
+    levelSel.value = "";
+    levelOther.value = "";
+    levelWrap.style.display = "none";
+    currSel.value = "";
+    currOther.value = "";
+    currWrap.style.display = "none";
+
+    const raw = (stored || "").trim();
+    if (!raw) return;
+
+    // Try to split the combined "Level — Curriculum" format first.
+    let level = raw;
+    let curriculum = "";
+    const parts = raw.split(" — ");
+    if (parts.length === 2 &&
+        EDUCATION_LEVEL_VALUES.includes(parts[0]) &&
+        CURRICULUM_VALUES.includes(parts[1])) {
+      level = parts[0];
+      curriculum = parts[1];
+    }
+
+    if (EDUCATION_LEVEL_VALUES.includes(level)) {
+      levelSel.value = level;
+    } else {
+      levelSel.value = "Other";
+      levelOther.value = level;
+      levelWrap.style.display = "block";
+    }
+
+    if (CURRICULUM_VALUES.includes(curriculum)) {
+      currSel.value = curriculum;
+    } else if (curriculum) {
+      currSel.value = "Other";
+      currOther.value = curriculum;
+      currWrap.style.display = "block";
+    }
   }
 
   /* ============================================
@@ -572,9 +1071,14 @@
     }
 
     const listHtml = items.map(it => {
+      // Mode emoji prefix: teacher entries (new "mode" or legacy
+      // "teacher_mode" history) and professional entries carry their own
+      // icon; everything else is a plain student note.
+      const modeIcon = (it.mode === 'teacher' || it.teacher_mode) ? '👨‍🏫 '
+                     : (it.mode === 'professional' ? '💼 ' : '');
       const label = section === 'chat'
         ? (it.title || 'Chat')
-        : (it.topic || 'Untitled');
+        : (modeIcon + (it.topic || 'Untitled'));
       return `
         <div class="history-item" data-id="${it.id}">
           <div class="history-item-main" onclick="restoreHistoryItem('${section}','${it.id}')">
@@ -623,12 +1127,36 @@
     } else if (section === 'notes') {
       document.getElementById('topic').value = item.topic || '';
       document.getElementById('subject').value = item.subject || '';
-      document.getElementById('class_name').value = item.class_name || '';
+      restoreClassLevelUI(item.class_name);
+      // Restore the notes mode. Newer entries store a single "mode" value
+      // (student | teacher | professional); older entries predate it, so
+      // they default to "student" unless a legacy teacher_mode flag is set.
+      const modeValue = (item.mode === 'teacher' || item.mode === 'professional' || item.mode === 'student')
+        ? item.mode
+        : (item.teacher_mode ? 'teacher' : 'student');
+      setNotesMode(modeValue);
+      // Re-select the style this note was generated with. Older history
+      // entries predate the Note Style feature, so fall back to "detailed".
+      const styleSelect = document.getElementById('note_style');
+      if (styleSelect) {
+        styleSelect.value = NOTE_STYLE_VALUES.includes(item.note_style) ? item.note_style : 'detailed';
+      }
       notesContent = item.content || '';
+      notesTopicLabel = item.topic || '';
       const box = document.getElementById('notes');
       box.textContent = notesContent;
       box.classList.toggle('empty', !notesContent.trim());
       document.getElementById('btn-pdf').disabled = !notesContent.trim();
+      setNotesExportButtonsDisabled(!notesContent.trim());
+      document.getElementById('btn-quiz').disabled = !notesContent.trim();
+      document.getElementById('btn-flashcards').disabled = !notesContent.trim();
+      document.getElementById('btn-tutor').disabled = !notesContent.trim();
+      document.getElementById('btn-mindmap').disabled = !notesContent.trim();
+      const saveBtnRestore = document.getElementById('btn-save-account');
+      if (saveBtnRestore) saveBtnRestore.disabled = !notesContent.trim();
+      resetQuizAndFlashcardUI();
+      resetTutorUI();
+      resetMindMapUI();
     } else if (section === 'blog') {
       document.getElementById('blog_topic').value = item.topic || '';
       document.getElementById('blog_keywords').value = item.keywords || '';
@@ -699,6 +1227,15 @@
     btn.disabled = loading;
   }
 
+  /* The Notes export buttons (docx/txt/md/copy) always mirror the PDF button's
+     disabled state — enabled only while notesContent has content. */
+  function setNotesExportButtonsDisabled(disabled) {
+    ["btn-docx", "btn-txt", "btn-md", "btn-copy-notes"].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (btn) btn.disabled = disabled;
+    });
+  }
+
   function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str;
@@ -753,7 +1290,7 @@
     bubble.appendChild(wrap);
   }
 
-  /* ---- FILE / IMAGE ATTACHMENTS ---- */
+  /* ---- FILE / IMAGE ATTACHMENTS (Chat) ---- */
   function renderAttachmentChips() {
     const box = document.getElementById('attachment-chips');
     box.innerHTML = '';
@@ -803,6 +1340,205 @@
       alert('❌ Upload error: ' + err.message);
     } finally {
       setStatus('chat', false);
+    }
+  }
+
+  /* ---- NOTES ATTACHMENTS (multi-source: files, images, YouTube, pasted, article) ---- */
+  // Adds one source to the shared notes-source array, under a max cap. Every
+  // source kind lives in the same array and renders as its own removable chip.
+  function pushNotesAttachment(att) {
+    if (!att) return;
+    if (pendingNotesAttachments.length >= MAX_NOTES_ATTACHMENTS) {
+      alert(`⚠️ Maximum ${MAX_NOTES_ATTACHMENTS} sources allowed — remove one before adding another.`);
+      return;
+    }
+    pendingNotesAttachments.push(att);
+    renderNotesAttachmentChips();
+  }
+
+  function renderNotesAttachmentChips() {
+    const box = document.getElementById('notes-attachment-chips');
+    box.innerHTML = '';
+    if (!pendingNotesAttachments.length) return;
+
+    pendingNotesAttachments.forEach((att, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'attachment-chip';
+      let icon = '📎';
+      if (att.type === 'image') icon = '🖼️';
+      else if (att.source === 'youtube') icon = '🎥';
+      else if (att.source === 'pasted') icon = '📖';
+      else if (att.source === 'article') icon = '🌐';
+      chip.innerHTML = `<span>${icon} ${escapeHtml(att.filename)}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'attachment-chip-remove';
+      removeBtn.setAttribute('aria-label', 'Remove attachment');
+      removeBtn.textContent = '✕';
+      removeBtn.onclick = () => {
+        pendingNotesAttachments.splice(idx, 1);
+        renderNotesAttachmentChips();
+      };
+      chip.appendChild(removeBtn);
+      box.appendChild(chip);
+    });
+  }
+
+  /* ---- NOTES PASTED-TEXT SOURCE (third single-slot source, next to file + YouTube) ---- */
+  function togglePasteTextPanel() {
+    const panel = document.getElementById('paste-text-panel');
+    if (!panel) return;
+    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+  }
+
+  function closePasteTextPanel() {
+    const panel = document.getElementById('paste-text-panel');
+    if (panel) panel.style.display = 'none';
+  }
+
+  function usePastedText() {
+    const textarea = document.getElementById('notes-pasted-text');
+    const status = document.getElementById('paste-text-status');
+    if (!textarea) return;
+    if (status) status.textContent = '';
+
+    const text = (textarea.value || '').trim();
+    if (!text) {
+      alert('⚠️ Please paste some source text first.');
+      return;
+    }
+    if (text.length < 30) {
+      alert('⚠️ That looks too short to be a usable source — please paste at least ~30 characters.');
+      return;
+    }
+
+    // Mirror the server-side caps (MAX_EXTRACTED_CHARS / MAX_TRANSCRIPT_CHARS
+    // are both 15000) so a giant paste never balloons the prompt. Truncate
+    // client-side and say so, consistent with how uploads are sliced upstream.
+    const MAX_PASTED_CHARS = 15000;
+    const content = text.length > MAX_PASTED_CHARS
+      ? text.slice(0, MAX_PASTED_CHARS)
+      : text;
+    if (text.length > MAX_PASTED_CHARS && status) {
+      status.textContent =
+        `⚠️ Pasted text was over ${MAX_PASTED_CHARS.toLocaleString()} characters — ` +
+        `using the first ${MAX_PASTED_CHARS.toLocaleString()} only.`;
+    }
+
+    // Same {type, filename, content} shape file/YouTube/web-article sources use
+    // (plus a "source" hint so the chip shows a 📖 icon) — appended alongside
+    // any other staged sources in the shared array.
+    pushNotesAttachment({
+      type: 'text',
+      source: 'pasted',
+      filename: 'Pasted text',
+      content
+    });
+    closePasteTextPanel();
+  }
+
+  async function handleNotesFileUpload(event) {
+    const files = Array.from(event.target.files);
+    event.target.value = ''; // allow re-selecting the same files later
+    if (!files.length) return;
+
+    // Multiple files may be selected at once (input is `multiple`) or added
+    // one-by-one over time — each one is appended to the shared array.
+    let added = 0;
+    for (const file of files) {
+      const slot = MAX_NOTES_ATTACHMENTS - pendingNotesAttachments.length;
+      if (slot <= 0) {
+        alert(`⚠️ Maximum ${MAX_NOTES_ATTACHMENTS} sources allowed — ${files.length - added} file(s) were not added.`);
+        break;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`⚠️ "${file.name}" is larger than 10MB — skipped.`);
+        continue;
+      }
+
+      const fd = new FormData();
+      fd.append('file', file);
+
+      setStatus('notes', true, `📎 Reading ${file.name}...`);
+      try {
+        const res = await fetch('/upload-file', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert('❌ "' + file.name + '": ' + (data.error || 'Could not read that file.'));
+          continue;
+        }
+        pendingNotesAttachments.push(data);
+        added += 1;
+        renderNotesAttachmentChips();
+      } catch (err) {
+        alert(`❌ Upload error for "${file.name}": ` + err.message);
+      }
+    }
+    setStatus('notes', false);
+    closePasteTextPanel();
+  }
+
+  async function handleYoutubeFetch() {
+    const input = document.getElementById('notes-youtube-url');
+    const url = input.value.trim();
+    if (!url) {
+      alert('⚠️ Please paste a YouTube video URL first.');
+      return;
+    }
+
+    setStatus('notes', true, '🎥 Fetching video transcript...');
+    try {
+      const res = await fetch('/fetch-youtube-transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert('❌ ' + (data.error || "Could not fetch that video's transcript."));
+        return;
+      }
+      // Same array as files/pasted text — the transcript joins the shared
+      // multi-slot sources instead of replacing anything staged before it.
+      pushNotesAttachment(data);
+      closePasteTextPanel();
+      input.value = '';
+    } catch (err) {
+      alert('❌ YouTube fetch error: ' + err.message);
+    } finally {
+      setStatus('notes', false);
+    }
+  }
+
+  async function handleArticleFetch() {
+    const input = document.getElementById('notes-article-url');
+    const url = input.value.trim();
+    if (!url) {
+      alert('⚠️ Please paste a web article URL first.');
+      return;
+    }
+
+    setStatus('notes', true, '🌐 Fetching article content...');
+    try {
+      const res = await fetch('/fetch-article-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert('❌ ' + (data.error || 'Could not fetch that article.'));
+        return;
+      }
+      // Same shared array as the other sources — append this article alongside
+      // any already-staged files, videos, or pasted text.
+      pushNotesAttachment(data);
+      closePasteTextPanel();
+      input.value = '';
+    } catch (err) {
+      alert('❌ Article fetch error: ' + err.message);
+    } finally {
+      setStatus('notes', false);
     }
   }
 
@@ -950,30 +1686,139 @@
     document.getElementById("question").value = "";
   }
 
+  /* ---- NOTES MODE (Notes Generator) ----
+     A single "mode" field (student | teacher | professional) that reuses the
+     exact same generation pipeline: the backend swaps the output format per
+     mode. The three segmented buttons below are mutually exclusive
+     (radio-like) — only one can be active at a time. This UI only relabels a
+     few fields, hides the (student-only) Note Style dropdown, and remembers
+     the mode in history. */
+  const NOTES_MODE_VALUES = ['student', 'teacher', 'professional'];
+  let notesMode = 'student';
+
+  function setNotesMode(mode) {
+    if (NOTES_MODE_VALUES.indexOf(mode) === -1) mode = 'student';
+    notesMode = mode;
+    // Keep exactly one segmented button active (radio-button-like exclusivity).
+    NOTES_MODE_VALUES.forEach(m => {
+      const btn = document.getElementById('mode-btn-' + m);
+      if (btn) {
+        btn.classList.toggle('active', m === mode);
+        btn.setAttribute('aria-checked', m === mode ? 'true' : 'false');
+      }
+    });
+    applyNotesMode();
+  }
+
+  function getNotesMode() {
+    return notesMode;
+  }
+
+  function applyNotesMode() {
+    const mode = notesMode;
+    const topicLabel = document.querySelector('label[for="topic"]');
+    const eduLabel = document.querySelector('label[for="education_level"]');
+    const styleWrap = document.getElementById('note_style_wrap');
+    const heading = document.getElementById('notes-heading');
+    const hint = document.getElementById('notes-mode-hint');
+
+    if (topicLabel) {
+      topicLabel.textContent = mode === 'teacher'
+        ? 'Topic / Chapter (optional if you attach a file)'
+        : mode === 'professional'
+          ? 'Topic / Meeting / Document Title (optional if you attach a file)'
+          : 'Topic / Chapter Name (optional if you attach a file)';
+    }
+    if (eduLabel) {
+      eduLabel.textContent = mode === 'teacher'
+        ? "Class you're teaching"
+        : mode === 'professional'
+          ? 'Work context (optional)'
+          : 'Education Level';
+    }
+    // Note Style shapes student notes only — hide it in Teacher/Professional
+    // mode, where the fixed format always applies.
+    if (styleWrap) styleWrap.style.display = (mode === 'teacher' || mode === 'professional') ? 'none' : '';
+    if (heading) {
+      heading.textContent = mode === 'teacher'
+        ? '👨‍🏫 Teaching Package'
+        : mode === 'professional'
+          ? '💼 Workplace Brief'
+          : 'Generated Notes';
+    }
+    if (hint) {
+      hint.textContent = mode === 'teacher'
+        ? 'Lesson Plan · Teaching Notes · Class Quiz · Homework · Worksheet · Answer Key'
+        : mode === 'professional'
+          ? 'Executive Summary · Key Points · Action Items · Risks · Next Steps'
+          : 'Exam-ready study notes — pick a Note Style below';
+    }
+  }
+
+  /* ---- NOTES STUDY-TOOL SUB-TABS ----
+     A second-level tab row that organizes the study tools (AI Tutor / Quiz /
+     Flashcards / Mind Map / PDF Workspace) below the always-visible Notes form
+     and output. Only one sub-panel is shown at a time; every existing id and
+     action button is untouched, only the wrapper's visibility toggles. */
+  const NOTES_SUBTABS = ['tutor', 'quiz', 'flashcards', 'mindmap', 'pdf'];
+
+  function openNotesSubTab(name) {
+    if (NOTES_SUBTABS.indexOf(name) === -1) return;
+    NOTES_SUBTABS.forEach(panel => {
+      const panelEl = document.getElementById('notes-panel-' + panel);
+      if (panelEl) panelEl.style.display = (panel === name) ? 'block' : 'none';
+      const btn = document.getElementById('notes-subtab-' + panel);
+      if (btn) {
+        btn.classList.toggle('active', panel === name);
+        btn.setAttribute('aria-selected', panel === name ? 'true' : 'false');
+      }
+    });
+  }
+
   /* ---- GENERATE NOTES ---- */
   async function generateNotes() {
     const topic      = document.getElementById("topic").value.trim();
     const subject    = document.getElementById("subject").value.trim();
-    const class_name = document.getElementById("class_name").value.trim();
+    const class_name = resolveClassLevel();
     const language   = resolveLanguage("language", "language_other");
+    const note_style = document.getElementById("note_style").value;
+    const mode = getNotesMode();
     const notesBox   = document.getElementById("notes");
 
-    if (!topic) {
-      setOutputEmpty(notesBox, "⚠️ Please enter a topic or chapter name first.");
+    if (!topic && !pendingNotesAttachments.length) {
+      setOutputEmpty(notesBox, "⚠️ Please enter a topic or attach a file first.");
       return;
     }
+
+    const attachmentsForThisRequest = pendingNotesAttachments;
 
     notesContent = "";
     setOutputEmpty(notesBox, "");
     setLoading("btn-notes", true);
     setLoading("btn-pdf", true);
-    setStatus("notes", true, "✨ Generating your notes...");
+    setNotesExportButtonsDisabled(true);
+    setStatus("notes", true, mode === 'teacher'
+      ? "👨‍🏫 Preparing your lesson-plan package..."
+      : mode === 'professional'
+        ? "💼 Preparing your workplace brief..."
+        : "✨ Generating your notes...");
+
+    // A fresh set of notes invalidates any previously generated quiz/flashcards/tutor chat/mind map
+    document.getElementById("btn-quiz").disabled = true;
+    document.getElementById("btn-flashcards").disabled = true;
+    document.getElementById("btn-tutor").disabled = true;
+    document.getElementById("btn-mindmap").disabled = true;
+    const saveBtnStart = document.getElementById("btn-save-account");
+    if (saveBtnStart) saveBtnStart.disabled = true;
+    resetQuizAndFlashcardUI();
+    resetTutorUI();
+    resetMindMapUI();
 
     try {
       const res = await fetch("/generate-notes-stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, subject, class_name, language })
+        body: JSON.stringify({ topic, subject, class_name, language, note_style, mode, attachments: attachmentsForThisRequest })
       });
 
       if (!res.ok) {
@@ -992,8 +1837,23 @@
           setLoading("btn-notes", false);
           if (notesContent.trim()) {
             document.getElementById("btn-pdf").disabled = false;
-            addHistoryItem('notes', { topic, subject, class_name, language, content: notesContent });
+            setNotesExportButtonsDisabled(false);
+            document.getElementById("btn-quiz").disabled = false;
+            document.getElementById("btn-flashcards").disabled = false;
+            document.getElementById("btn-tutor").disabled = false;
+            document.getElementById("btn-mindmap").disabled = false;
+            const saveBtn = document.getElementById("btn-save-account");
+            if (saveBtn) saveBtn.disabled = false;
+            // With no typed topic, derive the history label from the combined
+            // source filenames (same spirit as the single-attachment case).
+            const attachedNames = attachmentsForThisRequest.map(a => a.filename).join(', ');
+            const historyTopic = (topic || (attachedNames ? attachedNames : 'Untitled')).slice(0, 90);
+            notesTopicLabel = historyTopic;
+            addHistoryItem('notes', { topic: historyTopic, subject, class_name, language, note_style, mode, content: notesContent });
           }
+          // Clear the staged sources once they've been used for this generation
+          pendingNotesAttachments = [];
+          renderNotesAttachmentChips();
         },
         err => {
           setOutputEmpty(notesBox, "❌ Error: " + err);
@@ -1009,16 +1869,120 @@
     }
   }
 
+  /* ---- GENERATE STUDY KIT (chains Notes → Quiz → Flashcards → Mind Map) ---- */
+  // One-click convenience that runs the EXISTING generation functions in
+  // sequence (never in parallel — the AI backend shares rate limits, and
+  // sequential keeps per-step progress readable). Each step calls the real
+  // function, so its own status bar, loading spinner, error alert, and button
+  // re-enabling all still fire normally.
+  async function generateStudyKit() {
+    const kitBtn = document.getElementById('btn-study-kit');
+    if (!kitBtn) return;
+
+    // Nothing to build from — mirror generateNotes()'s own guard.
+    const hasSource = document.getElementById('topic').value.trim() || pendingNotesAttachments.length;
+    if (!hasSource && !notesContent.trim()) {
+      alert('⚠️ Please enter a topic or attach a source file first.');
+      return;
+    }
+
+    // Block every generation button while the chain runs so the user can't
+    // start a conflicting parallel generation.
+    const ids = ['btn-notes', 'btn-quiz', 'btn-flashcards', 'btn-mindmap'];
+    const setAllDisabled = (disabled) => {
+      ids.forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.disabled = disabled;
+      });
+    };
+    setAllDisabled(true);
+    kitBtn.disabled = true;
+
+    let notesOk = false;
+    try {
+      if (hasSource) {
+        // Step 1 of 4: generate the notes. `await generateNotes()` resolves
+        // only after the stream finishes, so notesContent is fully populated
+        // and history is saved before the chain moves on.
+        setStatus('notes', true, '⚡ Step 1 of 4: Generating notes...');
+        await generateNotes();
+        notesOk = !!notesContent.trim();
+        if (!notesOk) {
+          alert('⚠️ Notes generation failed — Study Kit stopped here.');
+          return;
+        }
+      } else {
+        // Notes already in the box — start the chain from the quiz.
+        notesOk = true;
+      }
+
+      // Steps 2-4 — sequential; each reuses the real function.
+      setStatus('notes', true, '⚡ Step 2 of 4: Building quiz...');
+      setAllDisabled(true);
+      await generateQuiz();
+
+      setStatus('notes', true, '⚡ Step 3 of 4: Building flashcards...');
+      setAllDisabled(true);
+      await generateFlashcards();
+
+      setStatus('notes', true, '⚡ Step 4 of 4: Building mind map...');
+      setAllDisabled(true);
+      await generateMindMap();
+
+      setStatus('notes', true, '✅ Study Kit complete!');
+      setTimeout(() => setStatus('notes', false), 2500);
+    } catch (err) {
+      // Safety net — the four functions handle their own failures with alerts
+      // and never throw, but this guarantees the UI is never left stuck.
+      alert('⚠️ Study Kit error: ' + err.message);
+      setStatus('notes', false);
+    } finally {
+      kitBtn.disabled = false;
+      document.getElementById('btn-notes').disabled = false;
+      // Quiz/Flashcards/Mind Map are only usable once notes exist.
+      if (notesOk) {
+        ids.slice(1).forEach(id => {
+          const b = document.getElementById(id);
+          if (b) b.disabled = false;
+        });
+      }
+    }
+  }
+
   function clearNotes() {
     notesContent = "";
+    notesTopicLabel = "";
     setOutputEmpty(document.getElementById("notes"), "Notes will appear here...");
     document.getElementById("topic").value      = "";
     document.getElementById("subject").value    = "";
-    document.getElementById("class_name").value = "";
+    document.getElementById("education_level").value = "";
+    document.getElementById("education_level_other").value = "";
+    document.getElementById("education_level_other_wrap").style.display = "none";
+    document.getElementById("curriculum").value = "";
+    document.getElementById("curriculum_other").value = "";
+    document.getElementById("curriculum_other_wrap").style.display = "none";
     document.getElementById("language").value   = "English";
+    document.getElementById("note_style").value = "detailed";
     document.getElementById("language_other").value = "";
     document.getElementById("language_other_wrap").style.display = "none";
     document.getElementById("btn-pdf").disabled = true;
+    setNotesExportButtonsDisabled(true);
+    document.getElementById("btn-quiz").disabled = true;
+    document.getElementById("btn-flashcards").disabled = true;
+    document.getElementById("btn-tutor").disabled = true;
+    document.getElementById("btn-mindmap").disabled = true;
+    const saveBtnClear = document.getElementById("btn-save-account");
+    if (saveBtnClear) saveBtnClear.disabled = true;
+    document.getElementById("notes-youtube-url").value = "";
+    document.getElementById("notes-article-url").value = "";
+    document.getElementById("notes-pasted-text").value = "";
+    document.getElementById("paste-text-panel").style.display = "none";
+    document.getElementById("paste-text-status").textContent = "";
+    pendingNotesAttachments = [];
+    renderNotesAttachmentChips();
+    resetQuizAndFlashcardUI();
+    resetTutorUI();
+    resetMindMapUI();
   }
 
   /* ---- DOWNLOAD PDF (notes) ---- */
@@ -1056,6 +2020,902 @@
       btn.disabled = false;
       btn.innerHTML = "<span>📄</span> PDF Download";
     }
+  }
+
+  /* ---- DOWNLOAD WORD (.docx) — server-built, same loading pattern as PDF ---- */
+  async function downloadNotesDocx() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const btn = document.getElementById("btn-docx");
+    btn.disabled = true;
+    btn.textContent = "⏳ Downloading...";
+    try {
+      const res = await fetch("/download-notes-docx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: notesContent })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert("❌ Word error: " + (err.error || "Unknown error"));
+        return;
+      }
+      const blob = await res.blob();
+      const url  = window.URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href = url;
+      a.download = "studyai_notes.docx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("❌ Word error: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "⬇️ Word (.docx)";
+    }
+  }
+
+  /* ---- DOWNLOAD TEXT (.txt) / MARKDOWN (.md) — client-side Blob export.
+     The notes content is plain text, so the file IS notesContent — no server
+     round-trip is needed. Same Blob pattern as downloadMindMapSvg(). ---- */
+  function downloadNotesTxt() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    downloadNotesBlob("studyai_notes.txt", "text/plain;charset=utf-8");
+  }
+
+  function downloadNotesMarkdown() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    // The generator already emits plain text with numbered sections, which is
+    // close enough to Markdown that the raw text is the most faithful export.
+    downloadNotesBlob("studyai_notes.md", "text/markdown;charset=utf-8");
+  }
+
+  function downloadNotesBlob(filename, mime) {
+    const blob = new Blob([notesContent], { type: mime });
+    const url  = window.URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  /* ---- COPY NOTES TO CLIPBOARD — same ✅ feedback as the chat bubbles' addCopyButton() ---- */
+  function copyNotes() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const btn = document.getElementById("btn-copy-notes");
+    navigator.clipboard.writeText(notesContent).then(() => {
+      btn.innerHTML = "✅ Copied";
+      setTimeout(() => { btn.innerHTML = "📋 Copy"; }, 1500);
+    }).catch((err) => {
+      alert("❌ Copy failed: " + err.message);
+    });
+  }
+
+  /* ---- SAVE NOTES TO ACCOUNT (logged-in users only — button only exists in the DOM if authenticated) ---- */
+  async function saveNoteToAccount() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const btn = document.getElementById("btn-save-account");
+    if (!btn) return; // guest session — nothing to do
+
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = "⏳ Saving...";
+
+    try {
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: document.getElementById("topic").value.trim() || "Untitled",
+          subject: document.getElementById("subject").value.trim(),
+          class_name: resolveClassLevel(),
+          language: resolveLanguage("language", "language_other"),
+          content: notesContent
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert("❌ " + (data.error || "Could not save to your account."));
+        return;
+      }
+      btn.innerHTML = "✅ Saved!";
+      setTimeout(() => { btn.innerHTML = originalHtml; }, 1800);
+    } catch (err) {
+      alert("❌ Save error: " + err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /* ============================================
+     QUIZ (generated from the current Notes box)
+     ============================================ */
+
+  function resetQuizAndFlashcardUI() {
+    quizData = [];
+    quizIndex = 0;
+    quizScore = 0;
+    quizAnswered = false;
+    quizResultSaved = false;
+    const quizBox = document.getElementById('quiz-box');
+    quizBox.style.display = 'none';
+    quizBox.innerHTML = '';
+
+    flashcardsData = [];
+    flashcardIndex = 0;
+    flashcardKnown = 0;
+    flashcardFlipped = false;
+    const fcBox = document.getElementById('flashcards-box');
+    fcBox.style.display = 'none';
+    fcBox.innerHTML = '';
+  }
+
+  async function generateQuiz() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const language = resolveLanguage("language", "language_other");
+    const box = document.getElementById('quiz-box');
+    box.style.display = 'none';
+    box.innerHTML = '';
+
+    setLoading('btn-quiz', true);
+    setStatus('quiz', true, '🧠 Building your quiz...');
+
+    try {
+      const res = await fetch('/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesContent, language })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.questions || !data.questions.length) {
+        alert('❌ ' + (data.error || 'Could not build a quiz from these notes.'));
+        return;
+      }
+      quizData = data.questions;
+      quizIndex = 0;
+      quizScore = 0;
+      quizAnswered = false;
+      quizResultSaved = false;
+      box.style.display = 'block';
+      renderQuizQuestion();
+    } catch (err) {
+      alert('❌ Quiz error: ' + err.message);
+    } finally {
+      setStatus('quiz', false);
+      setLoading('btn-quiz', false);
+    }
+  }
+
+  function renderQuizQuestion() {
+    const box = document.getElementById('quiz-box');
+
+    if (quizIndex >= quizData.length) {
+      const pct = Math.round((quizScore / quizData.length) * 100);
+      box.innerHTML = `
+        <div class="quiz-score">
+          <div class="quiz-score-big">${quizScore} / ${quizData.length}</div>
+          <div class="quiz-score-pct">${pct}% correct</div>
+          <button onclick="generateQuiz()">🔄 New Quiz</button>
+        </div>`;
+      saveQuizResultIfLoggedIn();
+      return;
+    }
+
+    const q = quizData[quizIndex];
+    // Older quizzes (generated before mixed question types existed) have no
+    // "type" field — default any missing/unknown type to multiple-choice so
+    // old saved data keeps rendering exactly as before.
+    const type = q.type || 'mcq';
+
+    box.innerHTML = `
+      <div class="quiz-progress">Question ${quizIndex + 1} of ${quizData.length}</div>
+      <div class="quiz-question"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-explanation" id="quiz-explanation" style="display:none;"></div>
+      <div class="quiz-nav">
+        <button class="secondary" id="quiz-next-btn" onclick="nextQuizQuestion()" disabled>Next ➜</button>
+      </div>
+    `;
+    box.querySelector('.quiz-question').textContent = q.question;
+
+    const optionsBox = document.getElementById('quiz-options');
+    quizAnswered = false;
+
+    if (type === 'fill_blank') {
+      // Text input instead of option buttons — graded by submitBlankAnswer()
+      // against q.answer_text.
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = 'quiz-blank-input';
+      input.className = 'quiz-option'; // reuse the existing option-box look
+      input.placeholder = 'Type your answer…';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitBlankAnswer();
+      });
+      optionsBox.appendChild(input);
+
+      const submitBtn = document.createElement('button');
+      submitBtn.type = 'button';
+      submitBtn.id = 'quiz-blank-submit';
+      submitBtn.className = 'secondary';
+      submitBtn.textContent = 'Submit Answer';
+      submitBtn.onclick = () => submitBlankAnswer();
+      optionsBox.appendChild(submitBtn);
+
+      input.focus();
+      return;
+    }
+
+    // mcq + true_false share the options + answer-as-index shape, so one
+    // rendering path handles both (true/false just ships fixed True/False
+    // options from the backend).
+    const options = (q.options && q.options.length) ? q.options : ['True', 'False'];
+    options.forEach((opt, i) => {
+      const optBtn = document.createElement('button');
+      optBtn.type = 'button';
+      optBtn.className = 'quiz-option';
+      optBtn.textContent = opt;
+      optBtn.onclick = () => selectQuizOption(i);
+      optionsBox.appendChild(optBtn);
+    });
+  }
+
+  function selectQuizOption(i) {
+    if (quizAnswered) return;
+    quizAnswered = true;
+
+    const q = quizData[quizIndex];
+    const optionButtons = document.querySelectorAll('#quiz-options .quiz-option');
+    optionButtons.forEach((optBtn, idx) => {
+      optBtn.disabled = true;
+      if (idx === q.answer) optBtn.classList.add('correct');
+      else if (idx === i) optBtn.classList.add('incorrect');
+    });
+
+    if (i === q.answer) quizScore++;
+
+    if (q.explanation) {
+      const expl = document.getElementById('quiz-explanation');
+      expl.textContent = '💡 ' + q.explanation;
+      expl.style.display = 'block';
+    }
+
+    document.getElementById('quiz-next-btn').disabled = false;
+  }
+
+  /* Fill-in-the-blank grading — student's typed answer is compared to the
+     correct answer_text with a deliberately simple, predictable exact match:
+     trim whitespace, lower-case both sides, compare. No fuzzy/AI grading.
+     Empty or malformed submissions simply grade as incorrect (never crash)
+     and still reveal the explanation, same as an MCQ. */
+  function submitBlankAnswer() {
+    if (quizAnswered) return;
+
+    const input = document.getElementById('quiz-blank-input');
+    if (!input) return;
+
+    const q = quizData[quizIndex];
+    const userAnswer = (input.value || '').trim().toLowerCase();
+    const correctAnswer = (q.answer_text || '').trim().toLowerCase();
+
+    quizAnswered = true;
+    input.disabled = true;
+
+    const submitBtn = document.getElementById('quiz-blank-submit');
+    if (submitBtn) submitBtn.disabled = true;
+
+    const isCorrect = !!(userAnswer && correctAnswer && userAnswer === correctAnswer);
+    input.classList.add(isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) quizScore++;
+
+    if (q.explanation) {
+      const expl = document.getElementById('quiz-explanation');
+      expl.textContent = '💡 ' + q.explanation;
+      expl.style.display = 'block';
+    }
+
+    document.getElementById('quiz-next-btn').disabled = false;
+  }
+
+  function nextQuizQuestion() {
+    quizIndex++;
+    renderQuizQuestion();
+  }
+
+  /* Auto-saves a finished quiz's score to the logged-in user's account for
+     the Dashboard's quiz average + weak-topic detection. No-op for guests
+     (isLoggedIn is rendered server-side) and silently ignores failures —
+     this is a background nice-to-have, not something that should interrupt
+     the quiz result screen the student is looking at. */
+  async function saveQuizResultIfLoggedIn() {
+    if (!isLoggedIn) return;
+    if (!quizData.length) return;
+    if (quizResultSaved) return;
+    quizResultSaved = true;
+
+    try {
+      await fetch('/api/quiz-results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: notesTopicLabel || document.getElementById('topic').value.trim() || 'Untitled',
+          subject: document.getElementById('subject').value.trim(),
+          score: quizScore,
+          total: quizData.length
+        })
+      });
+    } catch (err) {
+      console.log('Quiz result save failed:', err.message);
+    }
+  }
+
+  /* ============================================
+     FLASHCARDS (generated from the current Notes box)
+     ============================================ */
+
+  async function generateFlashcards() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const language = resolveLanguage("language", "language_other");
+    const box = document.getElementById('flashcards-box');
+    box.style.display = 'none';
+    box.innerHTML = '';
+
+    setLoading('btn-flashcards', true);
+    setStatus('flashcards', true, '🎴 Building your flashcards...');
+
+    try {
+      const res = await fetch('/generate-flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesContent, language })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.cards || !data.cards.length) {
+        alert('❌ ' + (data.error || 'Could not build flashcards from these notes.'));
+        return;
+      }
+      flashcardsData = data.cards;
+      flashcardIndex = 0;
+      flashcardKnown = 0;
+      flashcardFlipped = false;
+      box.style.display = 'block';
+      renderFlashcard();
+    } catch (err) {
+      alert('❌ Flashcards error: ' + err.message);
+    } finally {
+      setStatus('flashcards', false);
+      setLoading('btn-flashcards', false);
+    }
+  }
+
+  function renderFlashcard() {
+    const box = document.getElementById('flashcards-box');
+
+    if (flashcardIndex >= flashcardsData.length) {
+      box.innerHTML = `
+        <div class="quiz-score">
+          <div class="quiz-score-big">${flashcardKnown} / ${flashcardsData.length}</div>
+          <div class="quiz-score-pct">marked "I know this"</div>
+          <button onclick="generateFlashcards()">🔄 New Set</button>
+        </div>`;
+      return;
+    }
+
+    const card = flashcardsData[flashcardIndex];
+    flashcardFlipped = false;
+
+    box.innerHTML = `
+      <div class="flashcard-counter">Card ${flashcardIndex + 1} of ${flashcardsData.length}</div>
+      <div class="flashcard" id="flashcard" onclick="flipFlashcard()">
+        <div class="flashcard-inner" id="flashcard-inner">
+          <div class="flashcard-face flashcard-front"></div>
+          <div class="flashcard-face flashcard-back"></div>
+        </div>
+      </div>
+      <div class="flashcard-hint">Tap the card to flip</div>
+      <div class="flashcard-nav">
+        <button class="secondary" onclick="markFlashcard(false)">❌ Don't know</button>
+        <button onclick="markFlashcard(true)">✅ I know this</button>
+      </div>
+    `;
+    box.querySelector('.flashcard-front').textContent = card.front;
+    box.querySelector('.flashcard-back').textContent = card.back;
+  }
+
+  function flipFlashcard() {
+    flashcardFlipped = !flashcardFlipped;
+    const inner = document.getElementById('flashcard-inner');
+    if (inner) inner.classList.toggle('flipped', flashcardFlipped);
+  }
+
+  function markFlashcard(knewIt) {
+    if (knewIt) flashcardKnown++;
+    flashcardIndex++;
+    renderFlashcard();
+  }
+
+  /* ============================================
+     AI TUTOR ("Ask AI About These Notes")
+     Grounded, scoped Q&A about the current Notes box — kept entirely
+     local to this panel, separate from the main AI Chat's history.
+     ============================================ */
+
+  function resetTutorUI() {
+    const panel = document.getElementById('tutor-panel');
+    if (panel) panel.style.display = 'none';
+    const win = document.getElementById('tutor-window');
+    if (win) win.innerHTML = '';
+    const input = document.getElementById('tutor-question');
+    if (input) input.value = '';
+  }
+
+  function toggleTutorPanel() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const panel = document.getElementById('tutor-panel');
+    panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'block' : 'none';
+  }
+
+  async function askTutor(presetQuestion) {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+
+    const input = document.getElementById('tutor-question');
+    const question = (presetQuestion || input.value).trim();
+    if (!question) return;
+
+    const panel = document.getElementById('tutor-panel');
+    panel.style.display = 'block';
+
+    const win = document.getElementById('tutor-window');
+    const userBubble = document.createElement('div');
+    userBubble.className = 'bubble user';
+    userBubble.textContent = question;
+    win.appendChild(userBubble);
+
+    const assistantBubble = document.createElement('div');
+    assistantBubble.className = 'bubble assistant';
+    win.appendChild(assistantBubble);
+    win.scrollTop = win.scrollHeight;
+
+    if (!presetQuestion) input.value = '';
+
+    const language = resolveLanguage("language", "language_other");
+    let liveText = '';
+
+    setStatus('tutor', true, '🤖 Thinking...');
+
+    try {
+      const res = await fetch('/notes-tutor-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, notes: notesContent, language })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        assistantBubble.textContent = "❌ Error: " + (err.error || "Unknown error");
+        setStatus('tutor', false);
+        return;
+      }
+
+      await readStream(
+        res,
+        chunk => {
+          liveText += chunk;
+          assistantBubble.innerHTML = window.marked ? marked.parse(liveText) : escapeHtml(liveText);
+          win.scrollTop = win.scrollHeight;
+        },
+        () => {
+          setStatus('tutor', false);
+          if (liveText.trim()) addCopyButton(assistantBubble, () => liveText);
+        },
+        err => {
+          assistantBubble.textContent = "❌ Error: " + err;
+          setStatus('tutor', false);
+        }
+      );
+    } catch (err) {
+      assistantBubble.textContent = "❌ Error: " + err.message;
+      setStatus('tutor', false);
+    }
+  }
+
+  function clearTutorChat() {
+    const win = document.getElementById('tutor-window');
+    if (win) win.innerHTML = '';
+  }
+
+  /* ============================================
+     PDF WORKSPACE (Notes Generator panel)
+     Upload PDF(s) -> Summarize / Ask / Explain /
+     Translate / Compare via /pdf-workspace-stream
+     ============================================ */
+
+  let pdfWorkspaceDoc1 = null; // {type:'text', filename, content} staged from /upload-file
+  let pdfWorkspaceDoc2 = null;
+
+  function togglePdfWorkspacePanel() {
+    const panel = document.getElementById('pdf-workspace-panel');
+    if (!panel) return;
+    panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'block' : 'none';
+  }
+
+  function renderPdfWorkspace() {
+    const chips = document.getElementById('pdf-workspace-chips');
+    if (!chips) return;
+    chips.innerHTML = '';
+    const docs = [pdfWorkspaceDoc1, pdfWorkspaceDoc2].filter(Boolean);
+    docs.forEach((doc) => {
+      const chip = document.createElement('div');
+      chip.className = 'attachment-chip';
+      chip.innerHTML = `<span>📄 ${escapeHtml(doc.filename)}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'attachment-chip-remove';
+      removeBtn.setAttribute('aria-label', 'Remove PDF');
+      removeBtn.textContent = '✕';
+      removeBtn.onclick = () => {
+        if (pdfWorkspaceDoc1 === doc) pdfWorkspaceDoc1 = null;
+        if (pdfWorkspaceDoc2 === doc) pdfWorkspaceDoc2 = null;
+        renderPdfWorkspace();
+      };
+      chip.appendChild(removeBtn);
+      chips.appendChild(chip);
+    });
+
+    // The second upload slot (and the Compare button) only appear once a PDF is staged.
+    const btn2 = document.getElementById('btn-pdf-workspace-file-2');
+    const btnCompare = document.getElementById('btn-pdf-workspace-compare');
+    if (btn2) btn2.style.display = pdfWorkspaceDoc1 ? 'inline-block' : 'none';
+    if (btnCompare) btnCompare.style.display =
+      (pdfWorkspaceDoc1 && pdfWorkspaceDoc2) ? 'inline-block' : 'none';
+  }
+
+  async function handlePdfWorkspaceUpload(event) {
+    const input = event.target;
+    const file = input.files[0];
+    input.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    // Mirrors the server-side MAX_UPLOAD_BYTES (10MB) limit.
+    if (file.size > 10 * 1024 * 1024) {
+      alert('⚠️ That file is larger than 10MB — skipped.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('file', file);
+    const slot = input.id === 'pdf-workspace-file-2' ? 2 : 1;
+
+    setStatus('pdf-workspace', true, `📄 Reading ${file.name}...`);
+    try {
+      // Reuse the existing upload/extraction route — PDF text is pulled by
+      // extract_text_from_file() and truncated to MAX_EXTRACTED_CHARS there.
+      const res = await fetch('/upload-file', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert('❌ "' + file.name + '": ' + (data.error || 'Could not read that file.'));
+        return;
+      }
+      if (data.type !== 'text' || !data.content) {
+        alert('⚠️ Only text-based PDFs can be used in the PDF Workspace.');
+        return;
+      }
+      if (slot === 2) pdfWorkspaceDoc2 = data;
+      else pdfWorkspaceDoc1 = data;
+    } catch (err) {
+      alert('❌ Upload error for "' + file.name + '": ' + err.message);
+    } finally {
+      setStatus('pdf-workspace', false);
+    }
+    renderPdfWorkspace();
+  }
+
+  function pdfWorkspaceStatusLabel(action) {
+    const labels = {
+      summarize: '📝 Summarizing your PDF...',
+      ask: '❓ Answering from the PDF...',
+      explain: '💡 Explaining the PDF...',
+      translate: '🌐 Translating the PDF...',
+      compare: '⚖️ Comparing both PDFs...'
+    };
+    return labels[action] || '📑 Working...';
+  }
+
+  async function runPdfWorkspace(action) {
+    if (!pdfWorkspaceDoc1) {
+      alert('⚠️ Please upload a PDF first.');
+      return;
+    }
+
+    const output = document.getElementById('pdf-workspace-output');
+    const questionGroup = document.getElementById('pdf-workspace-question-group');
+    const langGroup = document.getElementById('pdf-workspace-language-group');
+    if (!output || !questionGroup || !langGroup) return;
+
+    // Show only the input field the current action needs.
+    questionGroup.style.display = 'none';
+    langGroup.style.display = 'none';
+    if (action === 'ask') questionGroup.style.display = 'block';
+    if (action === 'translate') langGroup.style.display = 'block';
+
+    let question = '';
+    let targetLanguage = '';
+    if (action === 'ask') {
+      question = document.getElementById('pdf-workspace-question').value.trim();
+      if (!question) {
+        document.getElementById('pdf-workspace-question').focus();
+        alert('⚠️ Type your question about the PDF, then click Ask.');
+        return;
+      }
+    }
+    if (action === 'translate') {
+      targetLanguage = document.getElementById('pdf-workspace-target-language').value.trim();
+      if (!targetLanguage) {
+        document.getElementById('pdf-workspace-target-language').focus();
+        alert('⚠️ Type the target language, then click Translate.');
+        return;
+      }
+    }
+    if (action === 'compare' && !pdfWorkspaceDoc2) {
+      alert('⚠️ Please upload a second PDF to compare.');
+      return;
+    }
+
+    setOutputEmpty(output, '');
+    setStatus('pdf-workspace', true, pdfWorkspaceStatusLabel(action));
+
+    const payload = {
+      action,
+      pdf_text_1: pdfWorkspaceDoc1.content,
+      filename_1: pdfWorkspaceDoc1.filename,
+      pdf_text_2: pdfWorkspaceDoc2 ? pdfWorkspaceDoc2.content : '',
+      filename_2: pdfWorkspaceDoc2 ? pdfWorkspaceDoc2.filename : '',
+      question,
+      target_language: targetLanguage
+    };
+
+    let liveText = '';
+    try {
+      const res = await fetch('/pdf-workspace-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setOutputEmpty(output, '❌ ' + (err.error || 'Something went wrong.'));
+        setStatus('pdf-workspace', false);
+        return;
+      }
+
+      // Reuse the shared SSE reader (same shape /ask-stream and /notes-tutor-stream use).
+      await readStream(
+        res,
+        chunk => {
+          liveText += chunk;
+          appendOutput(output, chunk);
+        },
+        () => {
+          setStatus('pdf-workspace', false);
+          if (liveText.trim()) addCopyButton(output, () => liveText);
+        },
+        err => {
+          setOutputEmpty(output, '❌ ' + err);
+          setStatus('pdf-workspace', false);
+        }
+      );
+    } catch (err) {
+      setOutputEmpty(output, '❌ ' + err.message);
+      setStatus('pdf-workspace', false);
+    }
+  }
+
+  /* ============================================
+     MIND MAP (generated from the current Notes box)
+     Rendered as a radial SVG diagram: center topic -> branch nodes ->
+     leaf nodes. Colors are hardcoded hex (not CSS var()) so a downloaded
+     SVG file still looks right when opened outside the page/site theme.
+     ============================================ */
+
+  const MINDMAP_COLORS = {
+    accent: '#facc15',
+    bgOutput: '#1f2937',
+    textMain: '#f1f5f9',
+    palette: ['#facc15', '#38bdf8', '#f472b6', '#4ade80', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171']
+  };
+
+  function resetMindMapUI() {
+    const box = document.getElementById('mindmap-box');
+    if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+  }
+
+  async function generateMindMap() {
+    if (!notesContent.trim()) {
+      alert("⚠️ Please generate notes first.");
+      return;
+    }
+    const language = resolveLanguage("language", "language_other");
+    const box = document.getElementById('mindmap-box');
+    box.style.display = 'none';
+    box.innerHTML = '';
+
+    setLoading('btn-mindmap', true);
+    setStatus('mindmap', true, '🗺️ Building your mind map...');
+
+    try {
+      const res = await fetch('/generate-mindmap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesContent, language })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.branches || !data.branches.length) {
+        alert('❌ ' + (data.error || 'Could not build a mind map from these notes.'));
+        return;
+      }
+      box.style.display = 'block';
+      renderMindMap(data);
+    } catch (err) {
+      alert('❌ Mind map error: ' + err.message);
+    } finally {
+      setStatus('mindmap', false);
+      setLoading('btn-mindmap', false);
+    }
+  }
+
+  function escapeHtmlForSvg(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function mindmapCenterNode(cx, cy, text) {
+    const w = 220, h = 76;
+    return `<g><title>${escapeHtmlForSvg(text)}</title>
+      <rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="18" style="fill:${MINDMAP_COLORS.accent};" />
+      <foreignObject x="${cx - w / 2 + 8}" y="${cy - h / 2 + 4}" width="${w - 16}" height="${h - 8}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex; align-items:center; justify-content:center; text-align:center; height:100%; font-family:inherit; font-weight:800; font-size:28px; color:#000; line-height:1.25; overflow:hidden;">${escapeHtmlForSvg(text)}</div>
+      </foreignObject>
+    </g>`;
+  }
+
+  function mindmapBranchNode(x, y, text, color) {
+    const w = 176, h = 54;
+    return `<g><title>${escapeHtmlForSvg(text)}</title>
+      <rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="14" style="fill:${color}; opacity:0.94;" />
+      <foreignObject x="${x - w / 2 + 6}" y="${y - h / 2 + 2}" width="${w - 12}" height="${h - 4}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex; align-items:center; justify-content:center; text-align:center; height:100%; font-family:inherit; font-weight:700; font-size:25px; color:#0f172a; line-height:1.2; overflow:hidden;">${escapeHtmlForSvg(text)}</div>
+      </foreignObject>
+    </g>`;
+  }
+
+  function mindmapLeafNode(x, y, text, color) {
+    const w = 140, h = 42;
+    return `<g><title>${escapeHtmlForSvg(text)}</title>
+      <rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="10" style="fill:${MINDMAP_COLORS.bgOutput}; stroke:${color}; stroke-width:1.5;" />
+      <foreignObject x="${x - w / 2 + 6}" y="${y - h / 2 + 2}" width="${w - 12}" height="${h - 4}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex; align-items:center; justify-content:center; text-align:center; height:100%; font-family:inherit; font-size:22px; color:${MINDMAP_COLORS.textMain}; line-height:1.2; overflow:hidden;">${escapeHtmlForSvg(text)}</div>
+      </foreignObject>
+    </g>`;
+  }
+
+  function renderMindMap(data) {
+    const container = document.getElementById('mindmap-box');
+    const topic = data.topic || 'Mind Map';
+    const branches = Array.isArray(data.branches) ? data.branches : [];
+
+    const width = 1540, height = 1540;
+    const cx = width / 2, cy = height / 2;
+    const branchRadius = 300;
+    const leafRadius = 380;
+
+    const n = branches.length || 1;
+    const branchPositions = branches.map((branch, i) => {
+      const angle = (2 * Math.PI * i) / n - Math.PI / 2; // start at top, go clockwise
+      return {
+        x: cx + branchRadius * Math.cos(angle),
+        y: cy + branchRadius * Math.sin(angle),
+        angle,
+        color: MINDMAP_COLORS.palette[i % MINDMAP_COLORS.palette.length]
+      };
+    });
+
+    let linesSvg = '';
+    let leafSvg = '';
+    let branchSvg = '';
+
+    branches.forEach((branch, i) => {
+      const pos = branchPositions[i];
+      linesSvg += `<line x1="${cx}" y1="${cy}" x2="${pos.x}" y2="${pos.y}" style="stroke:${pos.color};" stroke-width="2.5" opacity="0.55" />`;
+      branchSvg += mindmapBranchNode(pos.x, pos.y, branch.label || '', pos.color);
+
+      // Render at most 3 children per branch — the widest fan that fits a
+      // branch's neighbours without the leaf nodes overlapping (the old
+      // fixed spread produced overlapping leaves for every child count).
+      const children = Array.isArray(branch.children) ? branch.children.slice(0, 3) : [];
+      // Fan width scales with the branch count (0.95 keeps fans from
+      // crossing the neighbouring branch's fan on dense maps), so leaf
+      // nodes stay separated in every layout.
+      const spread = (2 * Math.PI / n) * 0.95;
+      children.forEach((child, j) => {
+        const t = children.length > 1 ? (j / (children.length - 1)) - 0.5 : 0;
+        const childAngle = pos.angle + t * spread;
+        const lx = pos.x + leafRadius * Math.cos(childAngle);
+        const ly = pos.y + leafRadius * Math.sin(childAngle);
+        linesSvg += `<line x1="${pos.x}" y1="${pos.y}" x2="${lx}" y2="${ly}" style="stroke:${pos.color};" stroke-width="1.5" opacity="0.4" />`;
+        leafSvg += mindmapLeafNode(lx, ly, child, pos.color);
+      });
+    });
+
+    const centerSvg = mindmapCenterNode(cx, cy, topic);
+
+    container.innerHTML = `
+      <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" id="mindmap-svg" style="width:100%; height:auto; max-height:640px;">
+        ${linesSvg}
+        ${leafSvg}
+        ${branchSvg}
+        ${centerSvg}
+      </svg>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="secondary" onclick="downloadMindMapSvg()">📥 Download as SVG</button>
+      </div>
+    `;
+  }
+
+  function downloadMindMapSvg() {
+    const svg = document.getElementById('mindmap-svg');
+    if (!svg) return;
+
+    let source = new XMLSerializer().serializeToString(svg);
+    if (!source.includes('xmlns="http://www.w3.org/2000/svg"')) {
+      source = source.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+
+    const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'studyai_mindmap.svg';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
   }
 
   /* ---- GENERATE BLOG ---- */
@@ -1164,20 +3024,33 @@
     }
   }
 
-  /* ---- VOICE INPUT (Web Speech API) ---- */
-  let recognition = null;
-  let isListening = false;
+  /* ---- VOICE INPUT (Web Speech API) ----
+     One independent SpeechRecognition instance per supported field, so the AI
+     Chat's #question mic and the Notes Generator's #topic mic can run at the
+     same time without interfering with each other's state or button UI.
+     Shared behavior for both: unsupported browsers hide the mic button,
+     permission-denied shows the alert, and each transcript APPENDS onto
+     whatever is already typed in the field (matching the original chat mic). */
+  const voiceInputs = {}; // mic button id -> { recognition, isListening, micBtn }
 
   function initVoiceInput() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const micBtn = document.getElementById('btn-mic');
+    // Each call to setupVoiceTarget creates its own recognition instance.
+    setupVoiceTarget('question', 'btn-mic');
+    setupVoiceTarget('topic', 'btn-mic-topic');
+  }
 
+  function setupVoiceTarget(targetId, buttonId) {
+    const targetBox = document.getElementById(targetId);
+    const micBtn = document.getElementById(buttonId);
+    if (!targetBox || !micBtn) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      if (micBtn) micBtn.style.display = 'none';
+      micBtn.style.display = 'none';
       return;
     }
 
-    recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
@@ -1186,14 +3059,20 @@
     // generic English locale if the browser doesn't expose one.
     recognition.lang = navigator.language || navigator.userLanguage || 'en-US';
 
-    const questionBox = document.getElementById('question');
+    const voice = { recognition, isListening: false, micBtn };
     let baseText = '';
 
+    const stopListening = () => {
+      voice.isListening = false;
+      micBtn.classList.remove('listening');
+      micBtn.textContent = '🎤';
+    };
+
     recognition.onstart = () => {
-      isListening = true;
+      voice.isListening = true;
       micBtn.classList.add('listening');
       micBtn.textContent = '⏹️';
-      baseText = questionBox.value ? questionBox.value + ' ' : '';
+      baseText = targetBox.value ? targetBox.value + ' ' : '';
     };
 
     recognition.onresult = (event) => {
@@ -1201,7 +3080,7 @@
       for (let i = 0; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
       }
-      questionBox.value = baseText + transcript;
+      targetBox.value = baseText + transcript;
     };
 
     recognition.onerror = (event) => {
@@ -1214,20 +3093,41 @@
 
     recognition.onend = () => stopListening();
 
-    function stopListening() {
-      isListening = false;
-      micBtn.classList.remove('listening');
-      micBtn.textContent = '🎤';
-    }
+    voice.toggle = () => {
+      if (voice.isListening) {
+        recognition.stop();
+      } else {
+        try { recognition.start(); } catch (e) {}
+      }
+    };
+
+    voiceInputs[buttonId] = voice;
   }
 
-  function toggleVoiceInput() {
-    if (!recognition) return;
-    if (isListening) {
-      recognition.stop();
-    } else {
-      try { recognition.start(); } catch (e) {}
+  function toggleVoiceInput(buttonId) {
+    const voice = voiceInputs[buttonId];
+    if (!voice) return;
+    voice.toggle();
+  }
+
+  /* ---- Prefill from Dashboard "Start Revision" link (?tab=notes&topic=...&subject=...) ---- */
+  function applyPrefillFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const topic = params.get('topic');
+    const subject = params.get('subject');
+
+    if (!tab && !topic && !subject) return; // nothing to do — normal page load
+
+    if (tab === 'notes') {
+      const notesTabBtn = document.querySelector('[aria-controls="section-notes"]');
+      if (notesTabBtn) switchTab('notes', notesTabBtn);
     }
+    if (topic) document.getElementById('topic').value = topic;
+    if (subject) document.getElementById('subject').value = subject;
+
+    // Clean the URL so refreshing the page doesn't keep re-applying this
+    history.replaceState(null, '', window.location.pathname);
   }
 
   /* ---- Enter key shortcut for chat ---- */
@@ -1242,15 +3142,104 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     initVoiceInput();
+    applyPrefillFromUrl();
   });
 
-  /* ---- Service Worker Register ---- */
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/static/service-worker.js")
-        .catch(err => console.log("SW registration failed:", err));
+  /* ---- Delete Account Modal Functions ---- */
+  function openDeleteAccountModal() {
+    const modal = document.getElementById('delete-account-modal');
+    const passwordInput = document.getElementById('delete-password');
+    if (modal) {
+      modal.style.display = 'flex';
+      // Focus the password input after a brief delay for the modal animation
+      setTimeout(() => passwordInput?.focus(), 50);
+    }
+  }
+
+  function closeDeleteAccountModal() {
+    const modal = document.getElementById('delete-account-modal');
+    const form = document.getElementById('delete-account-form');
+    if (modal) {
+      modal.style.display = 'none';
+      if (form) form.reset();
+    }
+  }
+
+  async function confirmDeleteAccount(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('delete-account-form');
+    const passwordInput = document.getElementById('delete-password');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    const password = passwordInput?.value;
+    if (!password) {
+      alert('Please enter your password to confirm.');
+      passwordInput?.focus();
+      return;
+    }
+
+    // Disable button and show loading state
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Deleting...';
+    }
+
+    try {
+      const response = await fetch('/account/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      // The server redirects to home with a flash message
+      // If successful, we'll be redirected to home page
+      // If error, the server returns a redirect with flash error
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else {
+        // Handle non-redirect responses (shouldn't happen with current implementation)
+        const text = await response.text();
+        if (response.ok) {
+          window.location.href = '/';
+        } else {
+          alert('Account deletion failed. Please try again.');
+        }
+      }
+    } catch (err) {
+      console.error('Delete account error:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Delete Account Permanently';
+      }
+    }
+  }
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeDeleteAccountModal();
+    }
+  });
+
+  // Close modal on overlay click
+  const modalOverlay = document.getElementById('delete-account-modal');
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeDeleteAccountModal();
+      }
     });
   }
+
+  /* ---- Service Worker Register ---- */
+  // NOTE: the /static/service-worker.js file is empty (the PWA offline
+  // feature was never finished), so registration is disabled to avoid
+  // registering a no-op worker.
 </script>
 
 </body>
