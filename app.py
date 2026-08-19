@@ -70,9 +70,38 @@ def load_user(user_id):
 
 app.register_blueprint(auth_bp)
 
-with app.app_context():
-    db.create_all()  # creates studyai.db + users table on first run
+def run_lightweight_migrations():
+    """db.create_all() only creates MISSING TABLES, never adds missing
+    COLUMNS to an existing table. This walks every model's expected columns
+    and ALTERs the real table to add anything not already there -- so a new
+    column added to models.py (like Study Streak or Notes Sharing did) never
+    needs a manual ALTER TABLE step again, on any environment."""
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    for table in db.metadata.tables.values():
+        if not inspector.has_table(table.name):
+            continue  # brand new table -- create_all() already built it correctly
+        existing_cols = {c["name"] for c in inspector.get_columns(table.name)}
+        for column in table.columns:
+            if column.name in existing_cols:
+                continue
+            col_type = column.type.compile(db.engine.dialect)
+            default_clause = ""
+            if column.default is not None and getattr(column.default, "is_scalar", False):
+                default_clause = f" DEFAULT {column.default.arg!r}"
+            ddl = f"ALTER TABLE {table.name} ADD COLUMN {column.name} {col_type}{default_clause}"
+            try:
+                db.session.execute(text(ddl))
+                db.session.commit()
+                print(f"[migration] added {table.name}.{column.name}")
+            except Exception as e:
+                db.session.rollback()
+                print(f"[migration] skipped {table.name}.{column.name}: {e}")
 
+
+with app.app_context():
+    db.create_all()  # creates missing tables (fresh DB / brand-new models)
+    run_lightweight_migrations()  # adds missing columns to existing tables
 
 # =========================
 # SPACED REVISION CONFIG
